@@ -1,0 +1,156 @@
+;FUNCION QUE ESPERA 1 CENTESIMA DE SEGUNDO
+WAIT_CENT:
+    MOVE.L  #8,D0  ;PONEMOS LA FUNCION 8 QUE ES LA DEL TIEMPO
+    TRAP    #15    ;EJECUTAMOS LA TRAP 15
+    MOVE.L  D1,D5  ;COPIAMOS EL REGISTRO A D5
+TIMER:
+    TRAP    #15    ;EJECUTAMOS LA TRAP 15 PARA OBTENER EL TIEMPO DE NUEVO
+    CMP     D1,D5  ;COMPARAMOS LAS CENTESIMAS DE D1 CON D5
+    BEQ     TIMER  ;SI SON IGUALES, ES QUE NO HA PASADO 1 CENTESIMA DE SEGUNDO
+    RTS            ;RETORNO
+    
+LIMPIAR_PANTALLA:
+    MOVE.L #11,D0     ;FUNCION DE LIMPIAR PANTALLA
+    MOVE.L #$FF00,D1  ;FUNCION DE LIMPIAR PANTALLA
+    TRAP   #15        ;LIMPIAR PANTALLA
+    RTS
+    
+    
+MOSTRAR_PANTALLA:
+    MOVE.L #94,D0  ;COPIAR EL BUFFER A LA PANTALLA PRINCIPAL
+    TRAP   #15
+    RTS
+   
+;Lee de la pila el color. Un longword ".L" $00bbggrr  
+MODO_GRAFICO:
+    MOVE.L  #17,D1    ;ACTIVAR EL DOBLE BUFFER
+    MOVE.L  #92,D0    ;MODO DIBUJO
+    TRAP    #15 
+    RTS
+    
+;Lee de la pila el color. Un longword ".L" $00bbggrr 
+COLOR_BORDE:
+    MOVE.L  4(A7),D1 ;COLOR VERDE
+    MOVE.L  #80,D0      
+    TRAP    #15
+    RTS
+
+;Lee de la pila el color. Un longword ".L" $00bbggrr 
+COLOR_RELLENO:
+    MOVE.L  4(A7),D1 ;COLOR VERDE RELLENO
+    MOVE.L  #81,D0      
+    TRAP    #15
+    RTS
+
+;Pone el color que se quiera para dibujar
+;Lee de la pila el color. Un longword ".L" $00bbggrr 
+PONER_COLOR:
+    MOVE.L  4(A7),D1 ;COLOR 
+    MOVE.L  #80,D0      
+    TRAP    #15
+
+    MOVE.L  4(A7),D1 ;COLOR RELLENO
+    MOVE.L  #81,D0      
+    TRAP    #15
+    RTS
+    
+;Genera un numero aleatorio entre 0 y el numero en la pila
+;El numero generado queda en d1
+;Lee de la pila un número word ".W"
+
+ALEATORIO:
+    ADD.W   #20011,RVAL
+    MOVE.L    AVAL,D0
+    ROL.L       #1,D0
+    MOVE.L      D0,AVAL
+    MOVE.L    BVAL,D1
+    ROR.L       #3,D1
+    MOVE.L      D1,BVAL
+    EOR.W       D0,D1
+    MOVE.W    RVAL,D0
+    EOR.W       D0,D1
+    AND.L   #$FFFF,D1
+    MOVE.W   4(A7),D0
+    DIVU.W      D0,D1
+    SWAP           D1
+    AND.L   #$FFFF,D1
+    RTS
+
+RVAL:    DC.W 0
+AVAL:    DC.L $16038ACE
+BVAL:    DC.L $5274BDF0
+
+;DIBUJA LA FIGURA 
+;INTRODUCIR EN LA PILA LA DIRECCIÓN DE LA FIGURA
+;INTRODUCIR POSICION X DE LA FIGURA EN PANTALLA UN WORD .W
+;INTRODUCIR POSICION Y DE LA FIGURA EN PANTALLA UN WORD .W
+DIBUJAR_FIGURA:
+    MOVE.L 4(A7),A0
+    MOVE.W (A0)+,D7   ;LEEMOS CUANTAS LINEAS TIENE LA FIGURA
+    SUB.W  #2,D7
+    CLR.L D1
+    CLR.L D2
+    CLR.L D3
+    CLR.L D4
+    MOVE.W #84,D0
+    
+    MOVE.W (A0)+,D1
+    MOVE.W (A0)+,D2
+    
+    ADD.W  10(A7),D1
+    ADD.W  8(A7),D2
+    
+FIG_LP:
+
+    MOVE.W (A0)+,D3
+    MOVE.W (A0)+,D4
+    ADD.W  10(A7),D3
+    ADD.W  8(A7),D4
+    
+    TRAP #15
+
+    MOVE.W D3,D1
+    MOVE.W D4,D2
+
+    DBRA.W D7,FIG_LP
+
+    RTS
+
+;HAY QUE INTRODUCIR EN LA PILA
+;WORD ".W" X
+;WORD ".W" Y
+;WORD ".W" ANCHO
+;WORD ".W" ALTO
+RECTANGULO:
+    CLR.L D1
+    CLR.L D2
+
+    MOVE.W 10(A7),D1
+    MOVE.W 8(A7),D2
+    MOVE.L   D1,D3
+    MOVE.L   D2,D4
+    ADD.W  6(A7),D3
+    ADD.W  4(A7),D4
+
+    MOVE.L #87,D0
+    TRAP #15
+
+    RTS
+
+;COMPRUEBA SI UNA TECLA ESTÁ PULSADA
+;INTRODUCIR EL CODIGO DE LA TECLA EN LA PILA ".W"
+;PONE UN 0 EN D1 SI LA TECLA NO ESTÁ PULSADA
+;SI ESTÁ PULSADA EN D1 HABRÁ UN VALOR DISTINTO DE 0
+CHECK_TECLA:
+    CLR.L   D1
+    MOVE.W  4(A7),D1  ;CODIGO DE TECLA TECLA EN D1
+    MOVE.L  #19,D0    ;
+    TRAP    #15       ;EJECUTAMOS LA FUNCION DE COMPROBAR SI LA TECLA ESTA PULSADA
+    RTS
+
+
+
+*~Font name~Courier New~
+*~Font size~18~
+*~Tab type~1~
+*~Tab size~4~
