@@ -1,6 +1,6 @@
 00001000 Starting Address
 Assembler used: EASy68K Editor/Assembler v5.16.01
-Created On: 31/03/2026 17:32:59
+Created On: 31/03/2026 18:12:00
 
 00000000                             1  *-----------------------------------------------------------
 00000000                             2  * Title      :
@@ -8,245 +8,214 @@ Created On: 31/03/2026 17:32:59
 00000000                             4  * Date       :
 00000000                             5  * Description:
 00000000                             6  *-----------------------------------------------------------
-00000000  =00000280                  7  ALTURA_PANTALLA: EQU 640
-00000000  =000001E0                  8  ANCHURA_PANTALLA: EQU 480
-00000000  =00000028                  9  ANCHO_CUADRADO: EQU 40
-00000000  =00000050                 10  ALTO_CUADRADO: EQU 80
-00000000  =000000F0                 11  X_CUADRADO: EQU 240
-00000000  =000000F0                 12  Y_CUADRADO: EQU 240
-00000000                            13   
-00001000                            14     ORG    $1000
-00001000                            15  START:                  ; first instruction of program
-00001000                            16  
-00001000                            17  DIBUJAR_COCHE:
-00001000                            18  
-00001000  3F3C 00F0                 19           MOVE.W #X_CUADRADO,-(A7)
-00001004  3F3C 00F0                 20           MOVE.W #Y_CUADRADO,-(A7)
-00001008  3F3C 0028                 21           MOVE.W #ANCHO_CUADRADO,-(A7)
-0000100C  3F3C 0050                 22           MOVE.W #ALTO_CUADRADO,-(A7)
-00001010  6100 0132                 23           BSR RECTANGULO
-00001014  508F                      24           ADDQ.L #8,A7
-00001016                            25  ;MOVER_COCHE:
-00001016                            26               
-00001016                            27  ;         MOVE.W #64,-(A7)
-00001016                            28   ;        BSR CHECK_TECLA
-00001016                            29    ;       CMP.W #0,D1
-00001016                            30     ;      ADDQ.L #2,A7
-00001016                            31      ;     BNE DERECHA
-00001016                            32       ;    MOVE.W #61,-(A7)
-00001016                            33        ;   BSR CHECK_TECLA
-00001016                            34         ; CMP.W #0,D1
-00001016                            35          ; ADDQ.L #2,A7
-00001016                            36           ;BNE IZQUIERDA
-00001016                            37           ;BRA MOVER_COCHE
-00001016                            38   
-00001016                            39  MOVER_COCHE:
-00001016                            40      ; --- COMPROBAR DERECHA ('d' minúscula) ---
-00001016  323C 0064                 41      MOVE.W  #$64, D1        ; Metemos el código de la 'd' en D1
-0000101A  7013                      42      MOVE.L  #19, D0         ; Tarea 19: ¿Está esta tecla pulsada?
-0000101C  4E4F                      43      TRAP    #15             
-0000101E  B27C 0000                 44      CMP.W   #0, D1          ; ¿El resultado es distinto de 0?
-00001022  6600 0034                 45      BNE     DERECHA         ; ¡Sí! Saltamos a DERECHA
-00001026                            46  
-00001026                            47      ; --- COMPROBAR DERECHA ('D' mayúscula) ---
-00001026  323C 0044                 48      MOVE.W  #$44, D1        ; Repetimos el proceso con la 'D'
-0000102A  7013                      49      MOVE.L  #19, D0
-0000102C  4E4F                      50      TRAP    #15
-0000102E  B27C 0000                 51      CMP.W   #0, D1
-00001032  6600 0024                 52      BNE     DERECHA
-00001036                            53  
-00001036                            54      ; --- COMPROBAR IZQUIERDA ('a' minúscula) ---
-00001036  323C 0061                 55      MOVE.W  #$61, D1        ; Código de la 'a' minúscula
-0000103A  7013                      56      MOVE.L  #19, D0
-0000103C  4E4F                      57      TRAP    #15
-0000103E  B27C 0000                 58      CMP.W   #0, D1
-00001042  6600 001E                 59      BNE     IZQUIERDA
-00001046                            60  
-00001046                            61      ; --- COMPROBAR IZQUIERDA ('A' mayúscula) ---
-00001046  323C 0041                 62      MOVE.W  #$41, D1        ; Código de la 'A' mayúscula
-0000104A  7013                      63      MOVE.L  #19, D0
-0000104C  4E4F                      64      TRAP    #15
-0000104E  B27C 0000                 65      CMP.W   #0, D1
-00001052  6600 000E                 66      BNE     IZQUIERDA
-00001056                            67  
-00001056  60BE                      68      BRA     MOVER_COCHE     ; Si no se ha pulsado ninguna, el bucle se repite
-00001058                            69   
-00001058                            70  DERECHA:
-00001058                            71  
-00001058  5A78 0028                 72      ADD.W #5,ANCHO_CUADRADO
-0000105C  5A78 00F0                 73      ADD.W #5,X_CUADRADO
-00001060  609E                      74      BRA DIBUJAR_COCHE
-00001062                            75        
-00001062                            76  IZQUIERDA:
-00001062                            77      
-00001062  5B78 0028                 78      SUB.W #5,ANCHO_CUADRADO
-00001066  5B78 00F0                 79      SUB.W #5,X_CUADRADO
-0000106A  6094                      80      BRA DIBUJAR_COCHE
-0000106C                            81  
-0000106C                            82  * Put program code here
-0000106C                            83  
-0000106C  FFFF FFFF                 84      SIMHALT             ; halt simulator
-00001070                            85      INCLUDE GROUTINES_FINAL.X68
-00001070                            86  ;FUNCION QUE ESPERA 1 CENTESIMA DE SEGUNDO
-00001070                            87  WAIT_CENT:
-00001070  7008                      88      MOVE.L  #8,D0  ;PONEMOS LA FUNCION 8 QUE ES LA DEL TIEMPO
-00001072  4E4F                      89      TRAP    #15    ;EJECUTAMOS LA TRAP 15
-00001074  2A01                      90      MOVE.L  D1,D5  ;COPIAMOS EL REGISTRO A D5
-00001076                            91  TIMER:
-00001076  4E4F                      92      TRAP    #15    ;EJECUTAMOS LA TRAP 15 PARA OBTENER EL TIEMPO DE NUEVO
-00001078  BA41                      93      CMP     D1,D5  ;COMPARAMOS LAS CENTESIMAS DE D1 CON D5
-0000107A  67FA                      94      BEQ     TIMER  ;SI SON IGUALES, ES QUE NO HA PASADO 1 CENTESIMA DE SEGUNDO
-0000107C  4E75                      95      RTS            ;RETORNO
-0000107E                            96      
-0000107E                            97  LIMPIAR_PANTALLA:
-0000107E  700B                      98      MOVE.L #11,D0     ;FUNCION DE LIMPIAR PANTALLA
-00001080  223C 0000FF00             99      MOVE.L #$FF00,D1  ;FUNCION DE LIMPIAR PANTALLA
-00001086  4E4F                     100      TRAP   #15        ;LIMPIAR PANTALLA
-00001088  4E75                     101      RTS
-0000108A                           102      
-0000108A                           103      
-0000108A                           104  MOSTRAR_PANTALLA:
-0000108A  705E                     105      MOVE.L #94,D0  ;COPIAR EL BUFFER A LA PANTALLA PRINCIPAL
-0000108C  4E4F                     106      TRAP   #15
-0000108E  4E75                     107      RTS
-00001090                           108     
-00001090                           109  ;Lee de la pila el color. Un longword ".L" $00bbggrr  
-00001090                           110  MODO_GRAFICO:
-00001090  7211                     111      MOVE.L  #17,D1    ;ACTIVAR EL DOBLE BUFFER
-00001092  705C                     112      MOVE.L  #92,D0    ;MODO DIBUJO
-00001094  4E4F                     113      TRAP    #15 
-00001096  4E75                     114      RTS
-00001098                           115      
-00001098                           116  ;Lee de la pila el color. Un longword ".L" $00bbggrr 
-00001098                           117  COLOR_BORDE:
-00001098  222F 0004                118      MOVE.L  4(A7),D1 ;COLOR VERDE
-0000109C  7050                     119      MOVE.L  #80,D0      
-0000109E  4E4F                     120      TRAP    #15
-000010A0  4E75                     121      RTS
-000010A2                           122  
-000010A2                           123  ;Lee de la pila el color. Un longword ".L" $00bbggrr 
-000010A2                           124  COLOR_RELLENO:
-000010A2  222F 0004                125      MOVE.L  4(A7),D1 ;COLOR VERDE RELLENO
-000010A6  7051                     126      MOVE.L  #81,D0      
-000010A8  4E4F                     127      TRAP    #15
-000010AA  4E75                     128      RTS
-000010AC                           129  
-000010AC                           130  ;Pone el color que se quiera para dibujar
-000010AC                           131  ;Lee de la pila el color. Un longword ".L" $00bbggrr 
-000010AC                           132  PONER_COLOR:
-000010AC  222F 0004                133      MOVE.L  4(A7),D1 ;COLOR 
-000010B0  7050                     134      MOVE.L  #80,D0      
-000010B2  4E4F                     135      TRAP    #15
-000010B4                           136  
-000010B4  222F 0004                137      MOVE.L  4(A7),D1 ;COLOR RELLENO
-000010B8  7051                     138      MOVE.L  #81,D0      
-000010BA  4E4F                     139      TRAP    #15
-000010BC  4E75                     140      RTS
-000010BE                           141      
-000010BE                           142  ;Genera un numero aleatorio entre 0 y el numero en la pila
-000010BE                           143  ;El numero generado queda en d1
-000010BE                           144  ;Lee de la pila un número word ".W"
-000010BE                           145  
-000010BE                           146  ALEATORIO:
-000010BE  0679 4E2B 00001102       147      ADD.W   #20011,RVAL
-000010C6  2039 00001104            148      MOVE.L    AVAL,D0
-000010CC  E398                     149      ROL.L       #1,D0
-000010CE  23C0 00001104            150      MOVE.L      D0,AVAL
-000010D4  2239 00001108            151      MOVE.L    BVAL,D1
-000010DA  E699                     152      ROR.L       #3,D1
-000010DC  23C1 00001108            153      MOVE.L      D1,BVAL
-000010E2  B141                     154      EOR.W       D0,D1
-000010E4  3039 00001102            155      MOVE.W    RVAL,D0
-000010EA  B141                     156      EOR.W       D0,D1
-000010EC  C2BC 0000FFFF            157      AND.L   #$FFFF,D1
-000010F2  302F 0004                158      MOVE.W   4(A7),D0
-000010F6  82C0                     159      DIVU.W      D0,D1
-000010F8  4841                     160      SWAP           D1
-000010FA  C2BC 0000FFFF            161      AND.L   #$FFFF,D1
-00001100  4E75                     162      RTS
-00001102                           163  
-00001102= 0000                     164  RVAL:    DC.W 0
-00001104= 16038ACE                 165  AVAL:    DC.L $16038ACE
-00001108= 5274BDF0                 166  BVAL:    DC.L $5274BDF0
-0000110C                           167  
-0000110C                           168  ;DIBUJA LA FIGURA 
-0000110C                           169  ;INTRODUCIR EN LA PILA LA DIRECCIÓN DE LA FIGURA
-0000110C                           170  ;INTRODUCIR POSICION X DE LA FIGURA EN PANTALLA UN WORD .W
-0000110C                           171  ;INTRODUCIR POSICION Y DE LA FIGURA EN PANTALLA UN WORD .W
-0000110C                           172  DIBUJAR_FIGURA:
-0000110C  206F 0004                173      MOVE.L 4(A7),A0
-00001110  3E18                     174      MOVE.W (A0)+,D7   ;LEEMOS CUANTAS LINEAS TIENE LA FIGURA
-00001112  5547                     175      SUB.W  #2,D7
-00001114  4281                     176      CLR.L D1
-00001116  4282                     177      CLR.L D2
-00001118  4283                     178      CLR.L D3
-0000111A  4284                     179      CLR.L D4
-0000111C  303C 0054                180      MOVE.W #84,D0
-00001120                           181      
-00001120  3218                     182      MOVE.W (A0)+,D1
-00001122  3418                     183      MOVE.W (A0)+,D2
-00001124                           184      
-00001124  D26F 000A                185      ADD.W  10(A7),D1
-00001128  D46F 0008                186      ADD.W  8(A7),D2
-0000112C                           187      
-0000112C                           188  FIG_LP:
-0000112C                           189  
-0000112C  3618                     190      MOVE.W (A0)+,D3
-0000112E  3818                     191      MOVE.W (A0)+,D4
-00001130  D66F 000A                192      ADD.W  10(A7),D3
-00001134  D86F 0008                193      ADD.W  8(A7),D4
-00001138                           194      
-00001138  4E4F                     195      TRAP #15
-0000113A                           196  
-0000113A  3203                     197      MOVE.W D3,D1
-0000113C  3404                     198      MOVE.W D4,D2
-0000113E                           199  
-0000113E  51CF FFEC                200      DBRA.W D7,FIG_LP
-00001142                           201  
-00001142  4E75                     202      RTS
-00001144                           203  
-00001144                           204  ;HAY QUE INTRODUCIR EN LA PILA
-00001144                           205  ;WORD ".W" X
-00001144                           206  ;WORD ".W" Y
-00001144                           207  ;WORD ".W" ANCHO
-00001144                           208  ;WORD ".W" ALTO
-00001144                           209  RECTANGULO:
-00001144  4281                     210      CLR.L D1
-00001146  4282                     211      CLR.L D2
-00001148                           212  
-00001148  322F 000A                213      MOVE.W 10(A7),D1
-0000114C  342F 0008                214      MOVE.W 8(A7),D2
-00001150  2601                     215      MOVE.L   D1,D3
-00001152  2802                     216      MOVE.L   D2,D4
-00001154  D66F 0006                217      ADD.W  6(A7),D3
-00001158  D86F 0004                218      ADD.W  4(A7),D4
-0000115C                           219  
-0000115C  7057                     220      MOVE.L #87,D0
-0000115E  4E4F                     221      TRAP #15
-00001160                           222  
-00001160  4E75                     223      RTS
-00001162                           224  
-00001162                           225  ;COMPRUEBA SI UNA TECLA ESTÁ PULSADA
-00001162                           226  ;INTRODUCIR EL CODIGO DE LA TECLA EN LA PILA ".W"
-00001162                           227  ;PONE UN 0 EN D1 SI LA TECLA NO ESTÁ PULSADA
-00001162                           228  ;SI ESTÁ PULSADA EN D1 HABRÁ UN VALOR DISTINTO DE 0
-00001162                           229  CHECK_TECLA:
-00001162  4281                     230      CLR.L   D1
-00001164  322F 0004                231      MOVE.W  4(A7),D1  ;CODIGO DE TECLA TECLA EN D1
-00001168  7013                     232      MOVE.L  #19,D0    ;
-0000116A  4E4F                     233      TRAP    #15       ;EJECUTAMOS LA FUNCION DE COMPROBAR SI LA TECLA ESTA PULSADA
-0000116C  4E75                     234      RTS
-0000116E                           235  
-0000116E                           236  
-0000116E                           237  
-0000116E                           238  -------------------- end include --------------------
-0000116E                           239      ;comentario Random 
-0000116E                           240      ;Felipe Mason
-0000116E                           241      ;aklajkladjkldfjkldsf
-0000116E                           242  
-0000116E                           243  * Put variables and constants here
-0000116E                           244  
-0000116E                           245      END    START        ; last line of source
+00000000  =02800000                  7  ALTURA_PANTALLA: EQU (640)<<16
+00000000  =01E00000                  8  ANCHURA_PANTALLA: EQU (480)<<16
+00000000                             9   
+00001000                            10     ORG    $1000
+00001000                            11  START:                  ; first instruction of program
+00001000                            12  
+00001000                            13  DIBUJAR_COCHE:
+00001000                            14           
+00001000  6100 0068                 15           BSR LIMPIAR_PANTALLA
+00001004  3F39 0000115E             16           MOVE.W X_CUADRADO,-(A7)
+0000100A  3F39 00001160             17           MOVE.W Y_CUADRADO,-(A7)
+00001010  3F39 0000115A             18           MOVE.W ANCHO_CUADRADO,-(A7)
+00001016  3F39 0000115C             19           MOVE.W ALTO_CUADRADO,-(A7)
+0000101C  6100 0112                 20           BSR RECTANGULO
+00001020  508F                      21           ADDQ.L #8,A7
+00001022                            22  MOVER_COCHE:  
+00001022  3F3C 0044                 23           MOVE.W #$44,-(A7)
+00001026  6100 0126                 24           BSR CHECK_TECLA
+0000102A  B27C 0000                 25           CMP.W #0,D1
+0000102E  548F                      26           ADDQ.L #2,A7
+00001030  6600 0016                 27           BNE DERECHA
+00001034  3F3C 0041                 28           MOVE.W #$41,-(A7)
+00001038  6100 0114                 29           BSR CHECK_TECLA
+0000103C  B27C 0000                 30           CMP.W #0,D1
+00001040  548F                      31           ADDQ.L #2,A7
+00001042  6600 000C                 32           BNE IZQUIERDA
+00001046  60DA                      33           BRA MOVER_COCHE
+00001048                            34   
+00001048                            35  DERECHA:
+00001048                            36  
+00001048                            37      ;ADD.W #1,ANCHO_CUADRADO
+00001048  5279 0000115E             38      ADD.W #1,X_CUADRADO
+0000104E  60B0                      39      BRA DIBUJAR_COCHE
+00001050                            40        
+00001050                            41  IZQUIERDA:
+00001050                            42      
+00001050                            43      ;SUB.W #1,ANCHO_CUADRADO
+00001050  5379 0000115E             44      SUB.W #1,X_CUADRADO
+00001056  60A8                      45      BRA DIBUJAR_COCHE
+00001058                            46  
+00001058                            47  * Put program code here
+00001058                            48  
+00001058  FFFF FFFF                 49      SIMHALT             ; halt simulator
+0000105C                            50      INCLUDE GROUTINES_FINAL.X68
+0000105C                            51  ;FUNCION QUE ESPERA 1 CENTESIMA DE SEGUNDO
+0000105C                            52  WAIT_CENT:
+0000105C  7008                      53      MOVE.L  #8,D0  ;PONEMOS LA FUNCION 8 QUE ES LA DEL TIEMPO
+0000105E  4E4F                      54      TRAP    #15    ;EJECUTAMOS LA TRAP 15
+00001060  2A01                      55      MOVE.L  D1,D5  ;COPIAMOS EL REGISTRO A D5
+00001062                            56  TIMER:
+00001062  4E4F                      57      TRAP    #15    ;EJECUTAMOS LA TRAP 15 PARA OBTENER EL TIEMPO DE NUEVO
+00001064  BA41                      58      CMP     D1,D5  ;COMPARAMOS LAS CENTESIMAS DE D1 CON D5
+00001066  67FA                      59      BEQ     TIMER  ;SI SON IGUALES, ES QUE NO HA PASADO 1 CENTESIMA DE SEGUNDO
+00001068  4E75                      60      RTS            ;RETORNO
+0000106A                            61      
+0000106A                            62  LIMPIAR_PANTALLA:
+0000106A  700B                      63      MOVE.L #11,D0     ;FUNCION DE LIMPIAR PANTALLA
+0000106C  223C 0000FF00             64      MOVE.L #$FF00,D1  ;FUNCION DE LIMPIAR PANTALLA
+00001072  4E4F                      65      TRAP   #15        ;LIMPIAR PANTALLA
+00001074  4E75                      66      RTS
+00001076                            67      
+00001076                            68      
+00001076                            69  MOSTRAR_PANTALLA:
+00001076  705E                      70      MOVE.L #94,D0  ;COPIAR EL BUFFER A LA PANTALLA PRINCIPAL
+00001078  4E4F                      71      TRAP   #15
+0000107A  4E75                      72      RTS
+0000107C                            73     
+0000107C                            74  ;Lee de la pila el color. Un longword ".L" $00bbggrr  
+0000107C                            75  MODO_GRAFICO:
+0000107C  7211                      76      MOVE.L  #17,D1    ;ACTIVAR EL DOBLE BUFFER
+0000107E  705C                      77      MOVE.L  #92,D0    ;MODO DIBUJO
+00001080  4E4F                      78      TRAP    #15 
+00001082  4E75                      79      RTS
+00001084                            80      
+00001084                            81  ;Lee de la pila el color. Un longword ".L" $00bbggrr 
+00001084                            82  COLOR_BORDE:
+00001084  222F 0004                 83      MOVE.L  4(A7),D1 ;COLOR VERDE
+00001088  7050                      84      MOVE.L  #80,D0      
+0000108A  4E4F                      85      TRAP    #15
+0000108C  4E75                      86      RTS
+0000108E                            87  
+0000108E                            88  ;Lee de la pila el color. Un longword ".L" $00bbggrr 
+0000108E                            89  COLOR_RELLENO:
+0000108E  222F 0004                 90      MOVE.L  4(A7),D1 ;COLOR VERDE RELLENO
+00001092  7051                      91      MOVE.L  #81,D0      
+00001094  4E4F                      92      TRAP    #15
+00001096  4E75                      93      RTS
+00001098                            94  
+00001098                            95  ;Pone el color que se quiera para dibujar
+00001098                            96  ;Lee de la pila el color. Un longword ".L" $00bbggrr 
+00001098                            97  PONER_COLOR:
+00001098  222F 0004                 98      MOVE.L  4(A7),D1 ;COLOR 
+0000109C  7050                      99      MOVE.L  #80,D0      
+0000109E  4E4F                     100      TRAP    #15
+000010A0                           101  
+000010A0  222F 0004                102      MOVE.L  4(A7),D1 ;COLOR RELLENO
+000010A4  7051                     103      MOVE.L  #81,D0      
+000010A6  4E4F                     104      TRAP    #15
+000010A8  4E75                     105      RTS
+000010AA                           106      
+000010AA                           107  ;Genera un numero aleatorio entre 0 y el numero en la pila
+000010AA                           108  ;El numero generado queda en d1
+000010AA                           109  ;Lee de la pila un número word ".W"
+000010AA                           110  
+000010AA                           111  ALEATORIO:
+000010AA  0679 4E2B 000010EE       112      ADD.W   #20011,RVAL
+000010B2  2039 000010F0            113      MOVE.L    AVAL,D0
+000010B8  E398                     114      ROL.L       #1,D0
+000010BA  23C0 000010F0            115      MOVE.L      D0,AVAL
+000010C0  2239 000010F4            116      MOVE.L    BVAL,D1
+000010C6  E699                     117      ROR.L       #3,D1
+000010C8  23C1 000010F4            118      MOVE.L      D1,BVAL
+000010CE  B141                     119      EOR.W       D0,D1
+000010D0  3039 000010EE            120      MOVE.W    RVAL,D0
+000010D6  B141                     121      EOR.W       D0,D1
+000010D8  C2BC 0000FFFF            122      AND.L   #$FFFF,D1
+000010DE  302F 0004                123      MOVE.W   4(A7),D0
+000010E2  82C0                     124      DIVU.W      D0,D1
+000010E4  4841                     125      SWAP           D1
+000010E6  C2BC 0000FFFF            126      AND.L   #$FFFF,D1
+000010EC  4E75                     127      RTS
+000010EE                           128  
+000010EE= 0000                     129  RVAL:    DC.W 0
+000010F0= 16038ACE                 130  AVAL:    DC.L $16038ACE
+000010F4= 5274BDF0                 131  BVAL:    DC.L $5274BDF0
+000010F8                           132  
+000010F8                           133  ;DIBUJA LA FIGURA 
+000010F8                           134  ;INTRODUCIR EN LA PILA LA DIRECCIÓN DE LA FIGURA
+000010F8                           135  ;INTRODUCIR POSICION X DE LA FIGURA EN PANTALLA UN WORD .W
+000010F8                           136  ;INTRODUCIR POSICION Y DE LA FIGURA EN PANTALLA UN WORD .W
+000010F8                           137  DIBUJAR_FIGURA:
+000010F8  206F 0004                138      MOVE.L 4(A7),A0
+000010FC  3E18                     139      MOVE.W (A0)+,D7   ;LEEMOS CUANTAS LINEAS TIENE LA FIGURA
+000010FE  5547                     140      SUB.W  #2,D7
+00001100  4281                     141      CLR.L D1
+00001102  4282                     142      CLR.L D2
+00001104  4283                     143      CLR.L D3
+00001106  4284                     144      CLR.L D4
+00001108  303C 0054                145      MOVE.W #84,D0
+0000110C                           146      
+0000110C  3218                     147      MOVE.W (A0)+,D1
+0000110E  3418                     148      MOVE.W (A0)+,D2
+00001110                           149      
+00001110  D26F 000A                150      ADD.W  10(A7),D1
+00001114  D46F 0008                151      ADD.W  8(A7),D2
+00001118                           152      
+00001118                           153  FIG_LP:
+00001118                           154  
+00001118  3618                     155      MOVE.W (A0)+,D3
+0000111A  3818                     156      MOVE.W (A0)+,D4
+0000111C  D66F 000A                157      ADD.W  10(A7),D3
+00001120  D86F 0008                158      ADD.W  8(A7),D4
+00001124                           159      
+00001124  4E4F                     160      TRAP #15
+00001126                           161  
+00001126  3203                     162      MOVE.W D3,D1
+00001128  3404                     163      MOVE.W D4,D2
+0000112A                           164  
+0000112A  51CF FFEC                165      DBRA.W D7,FIG_LP
+0000112E                           166  
+0000112E  4E75                     167      RTS
+00001130                           168  
+00001130                           169  ;HAY QUE INTRODUCIR EN LA PILA
+00001130                           170  ;WORD ".W" X
+00001130                           171  ;WORD ".W" Y
+00001130                           172  ;WORD ".W" ANCHO
+00001130                           173  ;WORD ".W" ALTO
+00001130                           174  RECTANGULO:
+00001130  4281                     175      CLR.L D1
+00001132  4282                     176      CLR.L D2
+00001134                           177  
+00001134  322F 000A                178      MOVE.W 10(A7),D1
+00001138  342F 0008                179      MOVE.W 8(A7),D2
+0000113C  2601                     180      MOVE.L   D1,D3
+0000113E  2802                     181      MOVE.L   D2,D4
+00001140  D66F 0006                182      ADD.W  6(A7),D3
+00001144  D86F 0004                183      ADD.W  4(A7),D4
+00001148                           184  
+00001148  7057                     185      MOVE.L #87,D0
+0000114A  4E4F                     186      TRAP #15
+0000114C                           187  
+0000114C  4E75                     188      RTS
+0000114E                           189  
+0000114E                           190  ;COMPRUEBA SI UNA TECLA ESTÁ PULSADA
+0000114E                           191  ;INTRODUCIR EL CODIGO DE LA TECLA EN LA PILA ".W"
+0000114E                           192  ;PONE UN 0 EN D1 SI LA TECLA NO ESTÁ PULSADA
+0000114E                           193  ;SI ESTÁ PULSADA EN D1 HABRÁ UN VALOR DISTINTO DE 0
+0000114E                           194  CHECK_TECLA:
+0000114E  4281                     195      CLR.L   D1
+00001150  322F 0004                196      MOVE.W  4(A7),D1  ;CODIGO DE TECLA TECLA EN D1
+00001154  7013                     197      MOVE.L  #19,D0    ;
+00001156  4E4F                     198      TRAP    #15       ;EJECUTAMOS LA FUNCION DE COMPROBAR SI LA TECLA ESTA PULSADA
+00001158  4E75                     199      RTS
+0000115A                           200  
+0000115A                           201  
+0000115A                           202  
+0000115A                           203  -------------------- end include --------------------
+0000115A                           204      ;comentario Random 
+0000115A                           205      ;Felipe Mason
+0000115A                           206      ;aklajkladjkldfjkldsf
+0000115A                           207  
+0000115A                           208  * Put variables and constants here
+0000115A= 0028                     209  ANCHO_CUADRADO: DC.W 40
+0000115C= 0050                     210  ALTO_CUADRADO: DC.W 80
+0000115E= 00F0                     211  X_CUADRADO: DC.W 240
+00001160= 00F0                     212  Y_CUADRADO: DC.W 240
+00001162                           213  
+00001162                           214      END    START        ; last line of source
 
 No errors detected
 No warnings generated
@@ -255,30 +224,30 @@ No warnings generated
 SYMBOL TABLE INFORMATION
 Symbol-name         Value
 -------------------------
-ALEATORIO           10BE
-ALTO_CUADRADO       50
-ALTURA_PANTALLA     280
-ANCHO_CUADRADO      28
-ANCHURA_PANTALLA    1E0
-AVAL                1104
-BVAL                1108
-CHECK_TECLA         1162
-COLOR_BORDE         1098
-COLOR_RELLENO       10A2
-DERECHA             1058
+ALEATORIO           10AA
+ALTO_CUADRADO       115C
+ALTURA_PANTALLA     2800000
+ANCHO_CUADRADO      115A
+ANCHURA_PANTALLA    1E00000
+AVAL                10F0
+BVAL                10F4
+CHECK_TECLA         114E
+COLOR_BORDE         1084
+COLOR_RELLENO       108E
+DERECHA             1048
 DIBUJAR_COCHE       1000
-DIBUJAR_FIGURA      110C
-FIG_LP              112C
-IZQUIERDA           1062
-LIMPIAR_PANTALLA    107E
-MODO_GRAFICO        1090
-MOSTRAR_PANTALLA    108A
-MOVER_COCHE         1016
-PONER_COLOR         10AC
-RECTANGULO          1144
-RVAL                1102
+DIBUJAR_FIGURA      10F8
+FIG_LP              1118
+IZQUIERDA           1050
+LIMPIAR_PANTALLA    106A
+MODO_GRAFICO        107C
+MOSTRAR_PANTALLA    1076
+MOVER_COCHE         1022
+PONER_COLOR         1098
+RECTANGULO          1130
+RVAL                10EE
 START               1000
-TIMER               1076
-WAIT_CENT           1070
-X_CUADRADO          F0
-Y_CUADRADO          F0
+TIMER               1062
+WAIT_CENT           105C
+X_CUADRADO          115E
+Y_CUADRADO          1160
