@@ -4,8 +4,8 @@
 * Date       :
 * Description:
 *-----------------------------------------------------------
-ALTURA_PANTALLA: EQU (640)<<16
-ANCHURA_PANTALLA: EQU (480)<<16
+ALTURA_PANTALLA: EQU (640)
+ANCHURA_PANTALLA: EQU (480)
  
    ORG    $1000
 START:                  ; first instruction of program
@@ -34,12 +34,14 @@ MOVER_COCHE:
  
 DERECHA:
 
-    ADD.W #1,X_CUADRADO
+    ADD.W #2,X_CUADRADO
+    BSR WAIT_CENT
     BRA DIBUJAR_COCHE
       
 IZQUIERDA:
     
-    SUB.W #1,X_CUADRADO
+    SUB.W #2,X_CUADRADO
+    BSR WAIT_CENT
     BRA DIBUJAR_COCHE
 
 * Put program code here
@@ -57,6 +59,9 @@ X_CUADRADO: DC.W 240
 Y_CUADRADO: DC.W 240
 
     END    START        ; last line of source
+
+
+
 
 
 
