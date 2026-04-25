@@ -23,8 +23,19 @@ BUCLE_JUEGO:
        BSR DIBUJAR_COCHE
        BSR MOVER_COCHE
        BSR CAMBIO_CARRETERA
-       BSR UPDATE_SEGUNDOS 
+       
+       BSR WAIT_CENT
+       BSR UPDATE_SEGUNDOS
+       BSR UPDATE_GAS_TIEMPO
+    
+       BSR DIBUJAR_TIEMPO
        BSR DIBUJAR_GASOLINA
+    
+       MOVE.W  #5,-(A7)
+       MOVE.W  #30,-(A7)
+       BSR DIBUJAR_SIMBOLO_GAS
+       ADD.L   #4,A7
+       
        BSR AVANZAR_CARRETERA
       
        BSR MOSTRAR_PANTALLA
@@ -252,11 +263,8 @@ SSET:
        
 AVANZAR_CARRETERA: 
       
-      BSR WAIT_CENT
       ADD.W #1,MOVIMIENTO_LINEA
       ADD.W #1,MOVIMIENTO_CARRETERA
-      
-      
       
       RTS
 
@@ -364,7 +372,9 @@ RETURN:
     RTS
     
     
-      
+;empieza codigo felipe
+
+
 RESET_SEGUNDOS:
     MOVE.W  #0,SEGUNDOS
     RTS
@@ -373,16 +383,23 @@ RESET_GASOLINA:
     RTS
 
 UPDATE_SEGUNDOS:
-    BSR WAIT_CENT       ;ESPERO UNA CENTESIMA
     ADD.W #1,CENT_COUNT ;SUMO UNO AL CONTADOR DE CENTESIMAS
     CMP.W #100,CENT_COUNT   ;HA LLEGADO A 100?
     BNE UPDATE_SEGUNDOS_FINAL     ;SI NO, CORTAR Y VOLVER A CONTAR
     MOVE.W  #0,CENT_COUNT   
     ADD.W   #1,SEGUNDOS     ;SUMAR 1 A LOS SEGUNDOS
-    MOVE.W SEGUNDOS,D2
-    BSR UPDATE_GAS  ;UPDATEAMOS LA GASOLINA
     RTS
 UPDATE_SEGUNDOS_FINAL:
+    RTS 
+    
+UPDATE_GAS_TIEMPO:
+    ADD.W #1,CENT_GAS_COUNT ;SUMO UNO AL CONTADOR DE CENTESIMAS
+    CMP.W #12,CENT_GAS_COUNT   ;HA LLEGADO?
+    BNE UPDATE_GAS_TIEMPO_FINAL     ;SI NO, CORTAR Y VOLVER A CONTAR
+    MOVE.W  #0,CENT_GAS_COUNT   
+    BSR UPDATE_GAS  ;UPDATEAMOS LA GASOLINA
+    RTS
+UPDATE_GAS_TIEMPO_FINAL:
     RTS 
 
 UPDATE_GAS:
@@ -404,7 +421,22 @@ RECARGAR_GASOLINA:
     RTS
 RECARGAR_GASOLINA_FINAL:
     RTS
+
+DIBUJAR_SIMBOLO_GAS:
+    LINK    A6,#0
+
+    MOVE.W  10(A6),D0
+    MOVE.W  D0,-(A7)
     
+    MOVE.W  8(A6),D0
+    MOVE.W  D0,-(A7)
+    
+    MOVE.L  #FIGURA_GASOLINA,-(A7)
+    BSR DIBUJAR_FIGURA
+    ADD.L   #8,A7
+    
+    UNLK    A6
+    RTS
 
 DIBUJAR_GASOLINA:
     MOVE.L #$0000FFFF, -(A7)
@@ -417,6 +449,7 @@ DIBUJAR_GASOLINA:
     MOVE.W  POS_Y, D0
     MOVE.W  GAS_MAX, D1
     ADD.W   D1,D0
+    MOVE.W  D0,MAX_MAS_OFF
     MOVE.W  D0,-(A7)
 
     MOVE.W  ANCHO_GAS, D0
@@ -429,7 +462,363 @@ DIBUJAR_GASOLINA:
     
     BSR RECTANGULO
     ADD.L   #8,A7
+    
+    BSR DIBUJAR_SIMBOLO_GAS
+    
+    ;AÑADIMOS BORDE DE LA GASOLINA
+    
+    LEA BORDE_GASOLINA,A0
+    MOVE.W  ANCHO_GAS,D0
+    MOVE.W  GAS_MAX,D1
+    
+    MOVE.W  D0,6(A0)    ;METEMOS EL ANCHO EN EL LA X DEL P2
+    MOVE.W  D0,10(A0)    ;POSICION X ES ANCHO P3
+    MOVE.W  D1,12(A0)   ;POSICION Y ES ALTO P3
+    MOVE.W  D1,16(A0)   ;SOLO ALTO P4
+    
+    MOVE.W  POS_X,D0
+    MOVE.W  D0,-(A7)
+    
+    MOVE.W  POS_Y,D0
+    MOVE.W  D0,-(A7)
+    
+    MOVE.L  #BORDE_GASOLINA,-(A7)
+    BSR DIBUJAR_FIGURA
+    ADD.L   #8,A7
+    
     RTS
+
+
+DIBUJAR_ENEMIGO:
+    MOVE.L #$00FFFFFF, -(A7)
+    BSR PONER_COLOR
+    ADD.L #4, A7
+    
+    LEA RUEDA_ENEMIGO,A0
+    MOVE.W  ANCHO_ENEMIGO,D0
+    ADD.W   #6,D0
+    
+    MOVE.W  D0,6(A0)
+    MOVE.W  D0,10(A0)
+    
+    MOVE.W  POS_X_ENEMIGO,D0
+    SUB.W   #3,D0
+    MOVE.W   D0,-(A7)    
+    
+    MOVE.W  POS_Y_ENEMIGO,D0  ;RUEDA DE ARRIBA
+    ADD.W   #5,D0
+    MOVE.W   D0,-(A7)
+    
+    MOVE.L  #RUEDA_ENEMIGO,-(A7)
+    BSR DIBUJAR_FIGURA
+    ADD.L   #8,A7
+      
+    MOVE.W  POS_X_ENEMIGO,D0
+    SUB.W   #3,D0
+    MOVE.W   D0,-(A7)
+    
+    MOVE.W  POS_Y_ENEMIGO,D0    ;RUEDA DE ABAJO
+    ADD.W   ALTO_ENEMIGO,D0
+    SUB.W   #10,D0
+    MOVE.W   D0,-(A7)
+    
+    MOVE.L  #RUEDA_ENEMIGO,-(A7)
+    BSR DIBUJAR_FIGURA
+    ADD.L   #8,A7
+    
+    MOVE.L #$000000FF, -(A7)
+    BSR PONER_COLOR
+    ADD.L #4, A7
+    
+    MOVE.W  POS_X_ENEMIGO,D0
+    MOVE.W   D0,-(A7)
+    
+    MOVE.W  POS_Y_ENEMIGO,D0
+    MOVE.W   D0,-(A7)
+    
+    MOVE.W  ANCHO_ENEMIGO,D0
+    MOVE.W   D0,-(A7)
+    
+    MOVE.W  ALTO_ENEMIGO,D0
+    MOVE.W   D0,-(A7)
+    
+    BSR RECTANGULO
+    ADD.L   #8,A7
+    
+    RTS
+
+;Introducir en la pila las coordenadas para dibujar el arbol
+;Primero la (X) y luego la (Y), limpiar 4 bites
+DIBUJAR_ARBOL:
+    LINK    A6,#0
+
+    MOVE.L  #$0013458B, -(A7) ;MARRON
+    BSR     PONER_COLOR
+    ADD.L   #4, A7
+
+    MOVE.W  10(A6),-(A7)     
+    MOVE.W  8(A6),-(A7)
+    MOVE.W  ANCHO_TRONCO,-(A7)          
+    MOVE.W  ALTO_TRONCO,-(A7)           
+    BSR     RECTANGULO
+    ADD.L   #8, A7
+
+    MOVE.L  #$0000FF00, -(A7)   ;VERDE
+    BSR     PONER_COLOR
+    ADD.L   #4, A7
+
+    MOVE.W  10(A6),D0
+    SUB.W   #22, D0             ; Centrar respecto al tronco
+    MOVE.W  D0, -(A7)           ; X
+    
+    MOVE.W  8(A6),D0
+    SUB.W   #60, D0             ; Poner sobre el tronco
+    MOVE.W  D0, -(A7)           ; Y
+    
+    MOVE.L  #TRIANGULO_GRANDE, -(A7)
+    BSR     DIBUJAR_FIGURA
+    ADD.L   #8, A7
+
+    UNLK    A6
+    RTS
+
+DIBUJAR_TIEMPO:
+    CLR.L   D0
+    MOVE.W  SEGUNDOS,D0
+    DIVU.W  #10,D0           ; D0 / 10 -> Cociente en parte alta, Resto en parte baja
+    
+    MOVE.W  D0,D2            ; D2 - Decenas
+    MOVE.W  D2,DECENAS
+    SWAP    D0               
+    MOVE.W  D0,D3            ; D3 - Unidades
+    MOVE.W  D3,UNIDADES
+    
+    ; Dibujar Decenas
+    MOVE.W  #100,-(A7)       ; X
+    MOVE.W  #50,-(A7)        ; Y
+    MOVE.W  DECENAS,-(A7)         
+    BSR     DIBUJAR_NUMERO
+    ADD.L   #6,A7
+    
+    ; Dibujar Unidades
+    MOVE.W  #125,-(A7)       ; X (un poco más a la derecha)
+    MOVE.W  #50,-(A7)        ; Y
+    MOVE.W  UNIDADES,-(A7)            
+    BSR     DIBUJAR_NUMERO
+    ADD.L   #6,A7
+    RTS
+
+DIBUJAR_NUMERO:
+    LINK    A6,#0
+    MOVE.L  #$0000FFFF, -(A7)   ;AMARILLO
+    BSR     PONER_COLOR
+    ADD.L   #4, A7
+    
+    MOVE.W  8(A6),D0        ; Obtener el dígito (0-9)
+    
+    CMP.W   #0,D0
+    BEQ     CALL_D0
+    CMP.W   #1,D0
+    BEQ     CALL_D1
+    CMP.W   #2,D0
+    BEQ     CALL_D2
+    CMP.W   #3,D0
+    BEQ     CALL_D3
+    CMP.W   #4,D0
+    BEQ     CALL_D4
+    CMP.W   #5,D0
+    BEQ     CALL_D5
+    CMP.W   #6,D0
+    BEQ     CALL_D6
+    CMP.W   #7,D0
+    BEQ     CALL_D7
+    CMP.W   #8,D0
+    BEQ     CALL_D8
+    CMP.W   #9,D0
+    BEQ     CALL_D9
+    BRA     FIN_DIB_NUM
+
+CALL_D0: BSR DIBUJAR_0
+    BRA FIN_DIB_NUM
+CALL_D1: BSR DIBUJAR_1
+    BRA FIN_DIB_NUM
+CALL_D2: BSR DIBUJAR_2
+    BRA FIN_DIB_NUM
+CALL_D3: BSR DIBUJAR_3
+    BRA FIN_DIB_NUM
+CALL_D4: BSR DIBUJAR_4
+    BRA FIN_DIB_NUM
+CALL_D5: BSR DIBUJAR_5
+    BRA FIN_DIB_NUM
+CALL_D6: BSR DIBUJAR_6
+    BRA FIN_DIB_NUM
+CALL_D7: BSR DIBUJAR_7
+    BRA FIN_DIB_NUM
+CALL_D8: BSR DIBUJAR_8
+    BRA FIN_DIB_NUM
+CALL_D9: BSR DIBUJAR_9
+
+FIN_DIB_NUM:
+    UNLK    A6
+    RTS
+
+DIBUJAR_0:
+    BSR SEG_SUP
+    BSR SEG_INF
+    BSR SEG_V_SI
+    BSR SEG_V_SD
+    BSR SEG_V_II
+    BSR SEG_V_ID
+    RTS
+
+DIBUJAR_1:
+    BSR SEG_V_SD
+    BSR SEG_V_ID
+    RTS
+
+DIBUJAR_2:
+    BSR SEG_SUP
+    BSR SEG_V_SD
+    BSR SEG_CEN
+    BSR SEG_V_II
+    BSR SEG_INF
+    RTS
+
+DIBUJAR_3:
+    BSR SEG_SUP
+    BSR SEG_V_SD
+    BSR SEG_CEN
+    BSR SEG_V_ID
+    BSR SEG_INF
+    RTS
+
+DIBUJAR_4:
+    BSR SEG_V_SI
+    BSR SEG_CEN
+    BSR SEG_V_SD
+    BSR SEG_V_ID
+    RTS
+
+DIBUJAR_5:
+    BSR SEG_SUP
+    BSR SEG_V_SI
+    BSR SEG_CEN
+    BSR SEG_V_ID
+    BSR SEG_INF
+    RTS
+
+DIBUJAR_6:
+    BSR SEG_SUP
+    BSR SEG_V_SI
+    BSR SEG_V_II
+    BSR SEG_CEN
+    BSR SEG_V_ID
+    BSR SEG_INF
+    RTS
+
+DIBUJAR_7:
+    BSR SEG_SUP
+    BSR SEG_V_SD
+    BSR SEG_V_ID
+    RTS
+
+DIBUJAR_8:
+    BSR SEG_SUP
+    BSR SEG_CEN
+    BSR SEG_INF
+    BSR SEG_V_SI
+    BSR SEG_V_SD
+    BSR SEG_V_II
+    BSR SEG_V_ID
+    RTS
+
+DIBUJAR_9:
+    BSR SEG_SUP
+    BSR SEG_V_SI
+    BSR SEG_V_SD
+    BSR SEG_CEN
+    BSR SEG_V_ID
+    BSR SEG_INF
+    RTS
+
+; SUB-FUNCIONES DE SEGMENTOS
+SEG_SUP: ; Horizontal Superior
+	MOVE.W 12(A6),-(A7)  ; X
+	MOVE.W 10(A6),-(A7)  ; Y
+	MOVE.W #20,-(A7)     ; ANCHO
+	MOVE.W #2,-(A7)      ; ALTO
+	BSR RECTANGULO
+	ADD.L #8,A7
+	RTS
+
+SEG_CEN: ; Horizontal Central
+	MOVE.W 12(A6),-(A7)  ; X
+	MOVE.W 10(A6),D0
+	ADD.W #20,D0
+	MOVE.W D0,-(A7)      ; Y+20
+	MOVE.W #20,-(A7)     ; ANCHO
+	MOVE.W #2,-(A7)      ; ALTO
+	BSR RECTANGULO
+	ADD.L #8,A7
+	RTS
+
+SEG_INF: ; Horizontal Inferior
+	MOVE.W 12(A6),-(A7)  ; X
+	MOVE.W 10(A6),D0
+	ADD.W #40,D0
+	MOVE.W D0,-(A7)      ; Y+40
+	MOVE.W #20,-(A7)     ; ANCHO
+	MOVE.W #2,-(A7)      ; ALTO
+	BSR RECTANGULO
+	ADD.L #8,A7
+	RTS
+
+SEG_V_SI: ; Vertical Superior Izquierda
+	MOVE.W 12(A6),-(A7)  ; X
+	MOVE.W 10(A6),-(A7)  ; Y
+	MOVE.W #2,-(A7)      ; ANCHO
+	MOVE.W #20,-(A7)     ; ALTO
+	BSR RECTANGULO
+	ADD.L #8,A7
+	RTS
+
+SEG_V_SD: ; Vertical Superior Derecha
+	MOVE.W 12(A6),D0
+	ADD.W #18,D0
+	MOVE.W D0,-(A7)      ; X+18
+	MOVE.W 10(A6),-(A7)  ; Y
+	MOVE.W #2,-(A7)      ; ANCHO
+	MOVE.W #20,-(A7)     ; ALTO
+	BSR RECTANGULO
+	ADD.L #8,A7
+	RTS
+
+SEG_V_II: ; Vertical Inferior Izquierda
+	MOVE.W 12(A6),-(A7)  ; X
+	MOVE.W 10(A6),D0
+	ADD.W #20,D0
+	MOVE.W D0,-(A7)      ; Y+20
+	MOVE.W #2,-(A7)      ; ANCHO
+	MOVE.W #20,-(A7)     ; ALTO
+	BSR RECTANGULO
+	ADD.L #8,A7
+	RTS
+
+SEG_V_ID: ; Vertical Inferior Derecha
+	MOVE.W 12(A6),D1
+	ADD.W #18,D1
+	MOVE.W D1,-(A7)      ; X+18
+	MOVE.W 10(A6),D0
+	ADD.W #20,D0
+	MOVE.W D0,-(A7)      ; Y+20
+	MOVE.W #2,-(A7)      ; ANCHO
+	MOVE.W #20,-(A7)     ; ALTO
+	BSR RECTANGULO
+	ADD.L #8,A7
+	RTS
+
+;termina codigo felipe
+
  
 ;TENGO QUE HARDCODEAR LAS CARRETERAS INCLINADAS PORQUE NO SE DIBUJA CORRECTAMENTE CON VARIABLES   
 CARRETERA_INCLINADA1:
@@ -452,8 +841,6 @@ CARRETERA_INCLINADA4:
      DC.W 2
      DC.W 0,0
      DC.W -200,-200
-
-
      
 CARRETERA_NORM:
     DC.W 2
@@ -467,6 +854,39 @@ CARRETERA_INVERTIDA:
     DC.W 0,-ALTURA_PANTALLA
     
     SIMHALT             ; halt simulator
+    
+FIGURA_GASOLINA:
+    DC.W    6
+    DC.W    10,5
+    DC.W    10,20
+    DC.W    25,20
+    DC.W    25,0
+    DC.W    15,0
+    DC.W    10,5
+
+BORDE_GASOLINA:
+    DC.W    5
+    DC.W    0,0
+    DC.W    0,0 ;ANCHO SOLO
+    DC.W    0,0 ;ANCHO Y ALTO
+    DC.W    0,0 ;ALTO SOLO
+    DC.W    0,0
+
+RUEDA_ENEMIGO:
+    DC.W    5
+    DC.W    0,0
+    DC.W    26,0    ;P2 = ANCHO + 6, 0
+    DC.W    26,5    ;P3 = ANCHO + 6, 5
+    DC.W    0,5
+    DC.W    0,0
+    
+TRIANGULO_GRANDE:  
+    DC.W    4
+    DC.W    30,0
+    DC.W    0,60
+    DC.W    60,60
+    DC.W    30,0  
+
     INCLUDE GROUTINES_FINAL.X68
     
 * Put variables and constants here
@@ -480,23 +900,43 @@ POSICION_LINEA2: DC.W 400
 POSICION_PREVIA_LINEA1: DC.W 200
 POSICION_PREVIA_LINEA2: DC.W 400
 POSICION_INICIAL_LINEAS_BLANCAS DC.W 0
+
+
 GASOLINA    DC.W 100
 GAS_MAX     DC.W 100
-CANTIDAD_RECARGA_GAS DC.W 15
+CANTIDAD_RECARGA_GAS DC.W 20
 SEGUNDOS    DC.W 0
-CONTADOR_CARRETERA: DC.W 0
 GAME_OVER   DC.B 0
 CENT_COUNT  DC.W 0
+CENT_GAS_COUNT  DC.W 0
+
+UNIDADES    DC.W    0
+DECENAS     DC.W    0
+
+MAX_MAS_OFF DC.W 0
 ANCHO_GAS   DC.W 20
-POS_X       DC.W 20
-POS_Y       DC.W 20
-MULT_ESCALA DC.W 1
+POS_X       DC.W 13
+POS_Y       DC.W 60
+
+POS_X_SIMBOLO_GAS DC.W  5
+POS_Y_SIMBOLO_GAS DC.W  30
+
+POS_X_ENEMIGO   DC.W    50
+POS_Y_ENEMIGO   DC.W    20
+ANCHO_ENEMIGO   DC.W    30
+ALTO_ENEMIGO    DC.W    40 
+
+ANCHO_TRONCO    DC.W    16
+ALTO_TRONCO     DC.W    25
+
+
 MOVIMIENTO_LINEA  DC.W 0
 MOVIMIENTO_CARRETERA DC.W 0
 INTERVALO_CARRETERA DC.W 0
 INDICADOR_CARRETERA DC.W 0
 
     END    START        ; last line of source
+
 
 
 
