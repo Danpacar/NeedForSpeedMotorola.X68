@@ -9,7 +9,6 @@ ANCHURA_PANTALLA: EQU (480)
  
    ORG    $1000
 START:                  ; first instruction of program
-
     BSR MODO_GRAFICO
     BSR RESET_SEGUNDOS
     BSR RESET_GASOLINA
@@ -60,7 +59,9 @@ REINICIAR:
     BSR START
        
 DIBUJAR_CARRETERA:
-
+       MOVE.L #$00FFFFFF, -(A7)
+       BSR PONER_COLOR
+       ADD.L #4, A7
 
        MOVE.W  INTERVALO_CARRETERA,D6
        MOVE.W  MOVIMIENTO_LINEA,POSICION_INICIAL_LINEAS_BLANCAS
@@ -287,6 +288,9 @@ AVANZAR_CARRETERA:
       RTS
 
 DIBUJAR_COCHE:
+         MOVE.L #$00FF0000, -(A7)
+         BSR PONER_COLOR
+         ADD.L #4, A7
          
          MOVE.W X_CUADRADO,-(A7)
          MOVE.W Y_CUADRADO,-(A7)
