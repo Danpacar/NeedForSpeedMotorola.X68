@@ -14,7 +14,9 @@ START:                  ; first instruction of program
     BSR RESET_SEGUNDOS
     BSR RESET_GASOLINA
 BUCLE_JUEGO:
-
+       CMP.W #1,GAME_OVER
+       BEQ FIN_JUEGO
+       
        BSR LIMPIAR_PANTALLA
        BSR DIBUJAR_CARRETERA
        BSR TRANSICION
@@ -40,6 +42,22 @@ BUCLE_JUEGO:
       
        BSR MOSTRAR_PANTALLA
        BRA BUCLE_JUEGO
+       
+FIN_JUEGO:
+    ;ADIOS JUEGO
+    MOVE.W  #32,-(A7)
+    BSR CHECK_TECLA
+    ADD.W   #2,A7
+    
+    CMP.W   #0,D1
+    BNE REINICIAR
+    
+    BSR WAIT_CENT
+    BRA FIN_JUEGO
+    
+REINICIAR:
+    MOVE.W  #0,GAME_OVER
+    BSR START
        
 DIBUJAR_CARRETERA:
 
