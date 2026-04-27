@@ -1,6 +1,6 @@
 00001000 Starting Address
 Assembler used: EASy68K Editor/Assembler v5.16.01
-Created On: 27/04/2026 17:53:27
+Created On: 27/04/2026 19:21:31
 
 00000000                             1  *-----------------------------------------------------------
 00000000                             2  * Title      :
@@ -13,1312 +13,1512 @@ Created On: 27/04/2026 17:53:27
 00000000                             9   
 00001000                            10     ORG    $1000
 00001000                            11  START:                  ; first instruction of program
-00001000  6100 0B88                 12      BSR MODO_GRAFICO
-00001004                            13      ;BSR RESET_COSAS_VARIAS
-00001004  6100 0622                 14      BSR RESET_SEGUNDOS
-00001008  6100 0628                 15      BSR RESET_GASOLINA
-0000100C  6100 04D8                 16      BSR INICIALIZAR_ARBOLES
-00001010                            17  BUCLE_JUEGO:
-00001010  0C79 0001 00001C84        18         CMP.W #1,GAME_OVER
-00001018  6700 0052                 19         BEQ FIN_JUEGO
-0000101C                            20         
-0000101C  6100 0B5A                 21         BSR LIMPIAR_PANTALLA
-00001020  6100 00AE                 22         BSR DIBUJAR_CARRETERA
-00001024  6100 0174                 23         BSR TRANSICION
-00001028  6100 00FE                 24         BSR SEGUNDA_CARRETERA
-0000102C  6100 02B4                 25         BSR LINEAS_BLANCAS
-00001030  6100 051C                 26         BSR MOSTRAR_ARBOLES
-00001034  6100 036E                 27         BSR DIBUJAR_COCHE
-00001038  6100 0394                 28         BSR MOVER_COCHE
-0000103C  6100 03C6                 29         BSR CAMBIO_CARRETERA
-00001040                            30         
-00001040  6100 0B28                 31         BSR WAIT_CENT
-00001044  6100 05F6                 32         BSR UPDATE_SEGUNDOS
-00001048  6100 0616                 33         BSR UPDATE_GAS_TIEMPO
-0000104C                            34      
-0000104C  6100 081C                 35         BSR DIBUJAR_TIEMPO
-00001050  6100 0698                 36         BSR DIBUJAR_GASOLINA
-00001054                            37      
-00001054  3F3C 0005                 38         MOVE.W  #5,-(A7)
-00001058  3F3C 001E                 39         MOVE.W  #30,-(A7)
-0000105C  6100 066C                 40         BSR DIBUJAR_SIMBOLO_GAS
-00001060  588F                      41         ADD.L   #4,A7
-00001062                            42         
-00001062  6100 02EA                 43         BSR AVANZAR_CARRETERA
-00001066                            44        
-00001066  6100 0B1C                 45         BSR MOSTRAR_PANTALLA
-0000106A  60A4                      46         BRA BUCLE_JUEGO
-0000106C                            47         
-0000106C                            48  FIN_JUEGO:
-0000106C                            49      ;ADIOS JUEGO
-0000106C  3F3C 0020                 50      MOVE.W  #32,-(A7)
-00001070  6100 0BEA                 51      BSR CHECK_TECLA
-00001074  544F                      52      ADD.W   #2,A7
-00001076                            53      
-00001076  B27C 0000                 54      CMP.W   #0,D1
-0000107A  6600 0008                 55      BNE REINICIAR
-0000107E                            56      
-0000107E  6100 0AEA                 57      BSR WAIT_CENT
-00001082  60E8                      58      BRA FIN_JUEGO
-00001084                            59      
-00001084                            60  REINICIAR:
-00001084                            61  
-00001084  33FC 0000 00001C84        62      MOVE.W  #0,GAME_OVER
-0000108C  6000 FF72                 63      BRA START
-00001090                            64      
-00001090                            65  ;========EMPIEZA EL CÓDIGO DE DANIEL==========
-00001090                            66    
-00001090                            67  RESET_COSAS_VARIAS:
-00001090                            68         
-00001090  33FC 0000 00001CAE        69         MOVE.W #0,INTERVALO_CARRETERA
-00001098  33FC 0000 00001CAA        70         MOVE.W #0,MOVIMIENTO_CARRETERA
-000010A0  33FC 0000 00001CAC        71         MOVE.W #0,MOVIMIENTO_ARBOLES
-000010A8  33FC 0002 00001CA6        72         MOVE.W #2,VELOCIDAD
-000010B0  33FC 00C8 00001C72        73         MOVE.W #200,POSICION_LINEA1
-000010B8  33FC 0190 00001C74        74         MOVE.W #400,POSICION_LINEA2
-000010C0  33FC 00C8 00001C76        75         MOVE.W #200,POSICION_PREVIA_LINEA1
-000010C8  33FC 0190 00001C78        76         MOVE.W #400,POSICION_PREVIA_LINEA2
-000010D0                            77         
-000010D0                            78     
-000010D0                            79  
-000010D0                            80       
-000010D0                            81  DIBUJAR_CARRETERA:
-000010D0                            82  
-000010D0                            83         ;COLOR
-000010D0  2F3C 00FFFFFF             84         MOVE.L #$00FFFFFF, -(A7)
-000010D6  6100 0ACE                 85         BSR PONER_COLOR
-000010DA  588F                      86         ADD.L #4, A7
-000010DC                            87  
-000010DC                            88         ;MOVIMIENTO
-000010DC  3C39 00001CAE             89         MOVE.W  INTERVALO_CARRETERA,D6
-000010E2                            90         
-000010E2                            91         
-000010E2                            92        ;UN LADO DE LA CARRETERA
-000010E2  3839 00001CAA             93         MOVE.W  MOVIMIENTO_CARRETERA,D4
-000010E8  3F39 00001C72             94         MOVE.W  POSICION_LINEA1,-(A7)
-000010EE  3F04                      95         MOVE.W  D4,-(A7)
-000010F0  2F3C 000015F4             96         MOVE.L  #CARRETERA_NORM,-(A7)
-000010F6  6100 0B0E                 97         BSR DIBUJAR_FIGURA
-000010FA  508F                      98         ADDQ.L #8,A7
-000010FC                            99         
-000010FC                           100         ;OTRO LADO CARRETERA
-000010FC  3839 00001CAA            101         MOVE.W  MOVIMIENTO_CARRETERA,D4
-00001102  3F39 00001C74            102         MOVE.W  POSICION_LINEA2,-(A7)
-00001108  3F04                     103         MOVE.W  D4,-(A7)
-0000110A  2F3C 000015F4            104         MOVE.L  #CARRETERA_NORM,-(A7)
-00001110  6100 0AF4                105         BSR DIBUJAR_FIGURA
-00001114  508F                     106         ADDQ.L #8,A7
-00001116                           107  
-00001116                           108         ;RESETEAR CARRETERA O DEJARLA CAER
-00001116  BC7C 0000                109         CMP.W #0,D6
-0000111A  6600 050A                110         BNE RETURN
-0000111E  33FC 0000 00001CAA       111         MOVE.W #0,MOVIMIENTO_CARRETERA
-00001126                           112         
-00001126                           113         
-00001126  4E75                     114         RTS
-00001128                           115         
-00001128                           116  SEGUNDA_CARRETERA:
-00001128                           117  
-00001128                           118         ;COMPROBAR SI SE ESTA TRANSICIONANDO
-00001128  0C79 0000 00001CAE       119         CMP.W #0,INTERVALO_CARRETERA
-00001130  6700 04F4                120         BEQ RETURN
-00001134                           121         
-00001134                           122         ;UN LADO DE LA CARRETERA
-00001134  3839 00001CAA            123         MOVE.W  MOVIMIENTO_CARRETERA,D4
-0000113A  0444 00C8                124         SUB.W   #200,D4
-0000113E  3F39 00001C76            125         MOVE.W  POSICION_PREVIA_LINEA1,-(A7)
-00001144  3F04                     126         MOVE.W  D4,-(A7)
-00001146  2F3C 000015FE            127         MOVE.L  #CARRETERA_INVERTIDA,-(A7)
-0000114C  6100 0AB8                128         BSR DIBUJAR_FIGURA
-00001150  508F                     129         ADDQ.L #8,A7
-00001152                           130         
-00001152                           131         ;OTRO LADO CARRETER       
-00001152  3839 00001CAA            132         MOVE.W  MOVIMIENTO_CARRETERA,D4
-00001158  0444 00C8                133         SUB.W   #200,D4
-0000115C  3F39 00001C78            134         MOVE.W  POSICION_PREVIA_LINEA2,-(A7)
-00001162  3F04                     135         MOVE.W  D4,-(A7)
-00001164  2F3C 000015FE            136         MOVE.L  #CARRETERA_INVERTIDA,-(A7)
-0000116A  6100 0A9A                137         BSR DIBUJAR_FIGURA
-0000116E  508F                     138         ADDQ.L #8,A7
-00001170                           139         
-00001170                           140         ;CAMBIO A LA CARRETERA1 UNA VEZ HA FINALIZADO LA TRANSICION
-00001170                           141         
-00001170                           142         
-00001170  0C79 0280 00001CAA       143         CMP.W  #ALTURA_PANTALLA,MOVIMIENTO_CARRETERA
-00001178  6D00 04AC                144         BLT  RETURN
-0000117C  33F9 00001C76 00001C72   145         MOVE.W POSICION_PREVIA_LINEA1,POSICION_LINEA1
-00001186  33F9 00001C78 00001C74   146         MOVE.W POSICION_PREVIA_LINEA2,POSICION_LINEA2
-00001190  33FC 0000 00001CAE       147         MOVE.W #0,INTERVALO_CARRETERA
-00001198                           148                
-00001198                           149         
-00001198  4E75                     150         RTS
-0000119A                           151  
-0000119A                           152  
-0000119A                           153  
-0000119A                           154         
-0000119A                           155  TRANSICION:
-0000119A                           156  
-0000119A                           157         ;ELEGIR TIPO DE TRANSICION
-0000119A  0C79 0000 00001CAE       158         CMP.W #0,INTERVALO_CARRETERA
-000011A2  6700 0482                159         BEQ RETURN
-000011A6  0C79 0000 00001CB0       160         CMP.W #0,INDICADOR_CARRETERA
-000011AE  6700 011E                161         BEQ TRANSICION_NOR
-000011B2  0C79 0001 00001CB0       162         CMP.W #1,INDICADOR_CARRETERA
-000011BA  6700 000E                163         BEQ TRANSICION_DER
-000011BE  0C79 0002 00001CB0       164         CMP.W #2,INDICADOR_CARRETERA
-000011C6  6700 0084                165         BEQ TRANSICION_IZQ
-000011CA                           166         
-000011CA                           167  TRANSICION_DER:
-000011CA                           168         
-000011CA                           169         ;UN LADO DE LA CARRETERA
-000011CA  3839 00001CAA            170         MOVE.W  MOVIMIENTO_CARRETERA,D4
-000011D0  3F39 00001C72            171         MOVE.W  POSICION_LINEA1,-(A7)
-000011D6  3F04                     172         MOVE.W  D4,-(A7)
-000011D8                           173         
-000011D8                           174         ;COMPROBAR SI ES UNA CURVA GRANDE O PEQUEÑA
-000011D8  3A39 00001C76            175         MOVE.W  POSICION_PREVIA_LINEA1,D5
-000011DE  9A79 00001C72            176         SUB.W   POSICION_LINEA1,D5       
-000011E4  BA7C 00C8                177         CMP.W   #200,D5
-000011E8  6700 0014                178         BEQ     LINEA1_FIGURA3             
-000011EC  BA7C FF38                179         CMP.W   #-200,D5
-000011F0  6700 000C                180         BEQ     LINEA1_FIGURA3             
-000011F4  2F3C 000015CC            181         MOVE.L  #CARRETERA_INCLINADA1,-(A7)
-000011FA  6000 0008                182         BRA     LINEA1_DIBUJAR_DER          
-000011FE                           183  LINEA1_FIGURA3:
-000011FE                           184                
-000011FE  2F3C 000015E0            185        MOVE.L  #CARRETERA_INCLINADA3,-(A7)
-00001204                           186  
-00001204                           187  LINEA1_DIBUJAR_DER:
-00001204                           188         
-00001204  6100 0A00                189         BSR     DIBUJAR_FIGURA
-00001208  508F                     190         ADDQ.L  #8,A7
-0000120A                           191         
-0000120A                           192         
-0000120A                           193         ;OTRO LADO CARRETERA 
-0000120A  3839 00001CAA            194         MOVE.W  MOVIMIENTO_CARRETERA,D4
-00001210  3F39 00001C74            195         MOVE.W  POSICION_LINEA2,-(A7)
-00001216  3F04                     196         MOVE.W  D4,-(A7)
-00001218                           197         
-00001218                           198  
-00001218                           199         ;COMPROBAR SI ES UNA CURVA GRANDE O PEQUEÑA
-00001218  3A39 00001C76            200         MOVE.W  POSICION_PREVIA_LINEA1,D5
-0000121E  9A79 00001C72            201         SUB.W   POSICION_LINEA1,D5       
-00001224  BA7C 00C8                202         CMP.W   #200,D5
-00001228  6700 0014                203         BEQ     LINEA2_FIGURA3
-0000122C  BA7C FF38                204         CMP.W   #-200,D5
-00001230  6700 000C                205         BEQ     LINEA2_FIGURA3
-00001234                           206         
-00001234                           207         
-00001234  2F3C 000015CC            208         MOVE.L  #CARRETERA_INCLINADA1,-(A7)
-0000123A  6000 0008                209         BRA     LINEA2_DIBUJAR_DER
-0000123E                           210  
-0000123E                           211  LINEA2_FIGURA3:
-0000123E                           212         
-0000123E  2F3C 000015E0            213         MOVE.L  #CARRETERA_INCLINADA3,-(A7)
-00001244                           214  
-00001244                           215  LINEA2_DIBUJAR_DER:
-00001244                           216  
-00001244  6100 09C0                217         BSR     DIBUJAR_FIGURA
-00001248  508F                     218         ADDQ.L  #8,A7
-0000124A                           219  
-0000124A  4E75                     220         RTS
-0000124C                           221                       
-0000124C                           222  TRANSICION_IZQ:
-0000124C                           223         ;UN LADO DE LA CARRETERA
-0000124C  3839 00001CAA            224         MOVE.W  MOVIMIENTO_CARRETERA,D4
-00001252  3F39 00001C72            225         MOVE.W  POSICION_LINEA1,-(A7)
-00001258  3F04                     226         MOVE.W  D4,-(A7)
-0000125A                           227         
-0000125A                           228         ;COMPROBAR SI ES UNA CURVA GRANDE O PEQUEÑA
-0000125A  3A39 00001C76            229         MOVE.W  POSICION_PREVIA_LINEA1,D5
-00001260  9A79 00001C72            230         SUB.W   POSICION_LINEA1,D5
-00001266  BA7C 00C8                231         CMP.W   #200,D5
-0000126A  6700 0014                232         BEQ     LINEA1_FIGURA4
-0000126E  BA7C FF38                233         CMP.W   #-200,D5
-00001272  6700 000C                234         BEQ     LINEA1_FIGURA4 
-00001276                           235         
-00001276                           236         
-00001276  2F3C 000015D6            237         MOVE.L  #CARRETERA_INCLINADA2,-(A7)
-0000127C  6000 0008                238         BRA     LINEA1_DIBUJAR_IZQ
-00001280                           239         
-00001280                           240         
-00001280                           241  LINEA1_FIGURA4:
-00001280                           242        
-00001280  2F3C 000015EA            243        MOVE.L  #CARRETERA_INCLINADA4,-(A7)
-00001286                           244  
-00001286                           245  
-00001286                           246  LINEA1_DIBUJAR_IZQ:
-00001286  6100 097E                247        BSR  DIBUJAR_FIGURA
-0000128A  508F                     248        ADDQ.L #8,A7
-0000128C                           249  
-0000128C                           250        
-0000128C                           251         ;OTRO LADO CARRETERA
-0000128C                           252        
-0000128C  3839 00001CAA            253         MOVE.W  MOVIMIENTO_CARRETERA,D4
-00001292  3F39 00001C74            254         MOVE.W  POSICION_LINEA2,-(A7)
-00001298  3F04                     255         MOVE.W  D4,-(A7)
-0000129A                           256         
-0000129A                           257         ;COMPROBAR SI ES UNA CURVA GRANDE O PEQUEÑA
-0000129A  3A39 00001C76            258         MOVE.W  POSICION_PREVIA_LINEA1,D5
-000012A0  9A79 00001C72            259         SUB.W   POSICION_LINEA1,D5
-000012A6  BA7C 00C8                260         CMP.W   #200,D5
-000012AA  6700 0014                261         BEQ     LINEA2_FIGURA4
-000012AE  BA7C FF38                262         CMP.W   #-200,D5
-000012B2  6700 000C                263         BEQ     LINEA2_FIGURA4 
-000012B6                           264         
-000012B6                           265         
-000012B6  2F3C 000015D6            266         MOVE.L  #CARRETERA_INCLINADA2,-(A7)
-000012BC  6000 0008                267         BRA     LINEA2_DIBUJAR_IZQ
-000012C0                           268         
-000012C0                           269         
-000012C0                           270  LINEA2_FIGURA4:
-000012C0                           271        
-000012C0  2F3C 000015EA            272        MOVE.L  #CARRETERA_INCLINADA4,-(A7)
-000012C6                           273  
-000012C6                           274  
-000012C6                           275  LINEA2_DIBUJAR_IZQ:
-000012C6                           276  
-000012C6  6100 093E                277        BSR  DIBUJAR_FIGURA
-000012CA  508F                     278        ADDQ.L #8,A7          
-000012CC                           279         
-000012CC  4E75                     280         RTS
-000012CE                           281         
-000012CE                           282  TRANSICION_NOR:
-000012CE                           283  
-000012CE  3239 00001C72            284         MOVE.W POSICION_LINEA1,D1
-000012D4  B279 00001C76            285         CMP.W POSICION_PREVIA_LINEA1,D1
-000012DA  6D00 FEEE                286         BLT.W TRANSICION_DER
-000012DE  6000 FF6C                287         BRA   TRANSICION_IZQ   
-000012E2                           288  
-000012E2                           289  LINEAS_BLANCAS:
-000012E2                           290  
-000012E2                           291        ;MOVIMIENTO
-000012E2  0C79 0064 00001CAE       292        CMP.W   #100,INTERVALO_CARRETERA
-000012EA  6700 0010                293        BEQ     CAIDA
-000012EE  33F9 00001CA8 00001C7A   294        MOVE.W  MOVIMIENTO_LINEA,POSICION_INICIAL_LINEAS_BLANCAS
-000012F8  6000 000C                295        BRA     LINEAS_BLANCAS_BUCLE  
-000012FC                           296        
-000012FC                           297  CAIDA:
-000012FC                           298  
-000012FC  33F9 00001CAA 00001C7A   299      MOVE.W   MOVIMIENTO_CARRETERA,POSICION_INICIAL_LINEAS_BLANCAS     
-00001306                           300  LINEAS_BLANCAS_BUCLE:       
-00001306                           301         
-00001306                           302         ;FIGURA
-00001306  3039 00001C72            303         MOVE.W  POSICION_LINEA1,D0
-0000130C  0640 0064                304         ADD.W   #100,D0
-00001310  3F00                     305         MOVE.W  D0,-(A7)
-00001312  3F39 00001C7A            306         MOVE.W  POSICION_INICIAL_LINEAS_BLANCAS,-(A7)
-00001318  3F3C 0005                307         MOVE.W  #5,-(A7)
-0000131C  3F3C 0014                308         MOVE.W  #20,-(A7)
-00001320  6100 091C                309         BSR RECTANGULO
-00001324  508F                     310         ADDQ.L  #8,A7
-00001326                           311         
-00001326                           312         ;BUCLE PARA DIBUJARLAS
-00001326  0679 0032 00001C7A       313         ADD.W   #50,POSICION_INICIAL_LINEAS_BLANCAS
-0000132E  0C79 0280 00001C7A       314         CMP.W   #640,POSICION_INICIAL_LINEAS_BLANCAS
-00001336  6DCE                     315         BLT     LINEAS_BLANCAS_BUCLE
-00001338                           316         
-00001338                           317         ;REINICIAR MOVIMIENTO
-00001338  0C79 0032 00001CA8       318         CMP.W   #50,MOVIMIENTO_LINEA
-00001340  6F00 02E4                319         BLE RETURN
-00001344  33FC 0000 00001CA8       320         MOVE.W  #0,MOVIMIENTO_LINEA       
-0000134C                           321  
-0000134C  4E75                     322         RTS
-0000134E                           323         
-0000134E                           324  AVANZAR_CARRETERA: 
-0000134E                           325        
-0000134E  49F9 0000161C            326        LEA   POS_Y_ARBOLES,A4
-00001354  3A39 00001CA6            327        MOVE.W VELOCIDAD,D5
-0000135A  DB79 00001CA8            328        ADD.W D5,MOVIMIENTO_LINEA
-00001360  DB79 00001CAA            329        ADD.W D5,MOVIMIENTO_CARRETERA
-00001366  DB54                     330        ADD.W D5,(A4)
-00001368  DB6C 0002                331        ADD.W D5,2(A4)
-0000136C  DB6C 0004                332        ADD.W D5,4(A4)
-00001370  DB6C 0006                333        ADD.W D5,6(A4)
-00001374  DB6C 0008                334        ADD.W D5,8(A4)
-00001378  DB79 00001C70            335        ADD.W D5,CONTADOR_CICLOS
-0000137E  3239 00001C70            336        MOVE.W CONTADOR_CICLOS,D1
-00001384  B27C 0000                337        CMP.W #0,D1
-00001388  6700 029C                338        BEQ RETURN
-0000138C  82FC 1770                339        DIVU.W   #6000,D1
-00001390  4841                     340        SWAP.W   D1
-00001392  B27C 0000                341        CMP.W    #0,D1
-00001396  6700 0004                342        BEQ      INCREMENTO_VELOCIDAD
-0000139A                           343  
-0000139A                           344        
-0000139A                           345        
-0000139A  4E75                     346        RTS
-0000139C                           347        
-0000139C                           348  INCREMENTO_VELOCIDAD:
-0000139C                           349            
-0000139C  5479 00001CA6            350            ADD.W #2,VELOCIDAD
-000013A2                           351            
-000013A2  4E75                     352            RTS
-000013A4                           353  
-000013A4                           354  DIBUJAR_COCHE:
-000013A4                           355  
-000013A4  2F3C 00FF0000            356           MOVE.L #$00FF0000, -(A7)
-000013AA  6100 07FA                357           BSR PONER_COLOR
-000013AE  588F                     358           ADD.L #4, A7
-000013B0                           359           
-000013B0  3F39 00001C6C            360           MOVE.W X_CUADRADO,-(A7)
-000013B6  3F39 00001C6E            361           MOVE.W Y_CUADRADO,-(A7)
-000013BC  3F39 00001C68            362           MOVE.W ANCHO_CUADRADO,-(A7)
-000013C2  3F39 00001C6A            363           MOVE.W ALTO_CUADRADO,-(A7)
-000013C8  6100 0874                364           BSR RECTANGULO
-000013CC  508F                     365           ADDQ.L #8,A7
-000013CE                           366           
-000013CE                           367         
-000013CE                           368           
-000013CE                           369  MOVER_COCHE:  
-000013CE                           370  
-000013CE                           371           ;COMPRUEBA TECLA
-000013CE  3F3C 0044                372           MOVE.W #$44,-(A7)
-000013D2  6100 0888                373           BSR CHECK_TECLA
-000013D6                           374           
-000013D6                           375           ;COMPROBAR SI SE MUEVE
-000013D6  B27C 0000                376           CMP.W #0,D1
-000013DA  548F                     377           ADDQ.L #2,A7
-000013DC  6600 0016                378           BNE DERECHA
-000013E0  3F3C 0041                379           MOVE.W #$41,-(A7)
-000013E4  6100 0876                380           BSR CHECK_TECLA
-000013E8  B27C 0000                381           CMP.W #0,D1
-000013EC  548F                     382           ADDQ.L #2,A7
-000013EE  6600 000C                383           BNE IZQUIERDA
-000013F2  4E75                     384           RTS
-000013F4                           385   
-000013F4                           386  DERECHA:
-000013F4                           387  
-000013F4  5479 00001C6C            388      ADD.W #2,X_CUADRADO
-000013FA  4E75                     389          RTS
-000013FC                           390      
+00001000  6100 0DDA                 12      BSR MODO_GRAFICO
+00001004  6100 009E                 13      BSR RESET_COSAS_VARIAS
+00001008  6100 060C                 14      BSR RESET_SEGUNDOS
+0000100C  6100 0612                 15      BSR RESET_GASOLINA
+00001010  6100 08DE                 16      BSR RESET_ENEMIGO
+00001014  6100 08D0                 17      BSR RESET_JUGADOR
+00001018  6100 04C4                 18      BSR INICIALIZAR_ARBOLES
+0000101C                            19  BUCLE_JUEGO:
+0000101C  0C79 0001 00001ECE        20         CMP.W #1,GAME_OVER
+00001024  6700 005A                 21         BEQ FIN_JUEGO
+00001028                            22         
+00001028  6100 0DA0                 23         BSR LIMPIAR_PANTALLA
+0000102C  6100 00BE                 24         BSR DIBUJAR_CARRETERA
+00001030  6100 0184                 25         BSR TRANSICION
+00001034  6100 010E                 26         BSR SEGUNDA_CARRETERA
+00001038  6100 02C4                 27         BSR LINEAS_BLANCAS
+0000103C  6100 04E6                 28         BSR MOSTRAR_ARBOLES
+00001040  6100 0806                 29         BSR DIBUJAR_JUGADOR
+00001044  6100 0380                 30         BSR MOVER_COCHE
+00001048  6100 03B2                 31         BSR CAMBIO_CARRETERA
+0000104C  6100 08AC                 32         BSR GESTIONAR_ENEMIGO
+00001050                            33         
+00001050  6100 0D6A                 34         BSR WAIT_CENT
+00001054  6100 05D4                 35         BSR UPDATE_SEGUNDOS
+00001058  6100 05F4                 36         BSR UPDATE_GAS_TIEMPO
+0000105C                            37      
+0000105C  6100 0A5E                 38         BSR DIBUJAR_TIEMPO
+00001060  6100 0676                 39         BSR DIBUJAR_GASOLINA
+00001064  6100 06FA                 40         BSR GESTIONAR_DIBUJO_GASOLINA
+00001068                            41      
+00001068  3F3C 0005                 42         MOVE.W  #5,-(A7)
+0000106C  3F3C 001E                 43         MOVE.W  #30,-(A7)
+00001070  6100 0646                 44         BSR DIBUJAR_SIMBOLO_GAS
+00001074  588F                      45         ADD.L   #4,A7
+00001076                            46         
+00001076  6100 02F8                 47         BSR AVANZAR_CARRETERA
+0000107A                            48        
+0000107A  6100 0D5A                 49         BSR MOSTRAR_PANTALLA
+0000107E  609C                      50         BRA BUCLE_JUEGO
+00001080                            51         
+00001080                            52  FIN_JUEGO:
+00001080                            53      ;ADIOS JUEGO
+00001080  3F3C 0020                 54      MOVE.W  #32,-(A7)
+00001084  6100 0E28                 55      BSR CHECK_TECLA
+00001088  544F                      56      ADD.W   #2,A7
+0000108A                            57      
+0000108A  B27C 0000                 58      CMP.W   #0,D1
+0000108E  6600 0008                 59      BNE REINICIAR
+00001092                            60      
+00001092  6100 0D28                 61      BSR WAIT_CENT
+00001096  60E8                      62      BRA FIN_JUEGO
+00001098                            63      
+00001098                            64  REINICIAR:
+00001098                            65  
+00001098  33FC 0000 00001ECE        66      MOVE.W  #0,GAME_OVER
+000010A0  6000 FF5E                 67      BRA START
+000010A4                            68      
+000010A4                            69  ;========EMPIEZA EL CÓDIGO DE DANIEL==========
+000010A4                            70    
+000010A4                            71  RESET_COSAS_VARIAS:
+000010A4                            72         
+000010A4  33FC 0000 00001F08        73         MOVE.W #0,INTERVALO_CARRETERA
+000010AC  33FC 0000 00001F04        74         MOVE.W #0,MOVIMIENTO_CARRETERA
+000010B4  33FC 0000 00001F06        75         MOVE.W #0,MOVIMIENTO_ARBOLES
+000010BC  33FC 0002 00001F00        76         MOVE.W #2,VELOCIDAD
+000010C4  33FC 00C8 00001EBC        77         MOVE.W #200,POSICION_LINEA1
+000010CC  33FC 0190 00001EBE        78         MOVE.W #400,POSICION_LINEA2
+000010D4  33FC 00C8 00001EC0        79         MOVE.W #200,POSICION_PREVIA_LINEA1
+000010DC  33FC 0190 00001EC2        80         MOVE.W #400,POSICION_PREVIA_LINEA2
+000010E4  33FC 00F0 00001EE0        81         MOVE.W #240,X_JUGADOR
+000010EC                            82         
+000010EC                            83     
+000010EC                            84  
+000010EC                            85       
+000010EC                            86  DIBUJAR_CARRETERA:
+000010EC                            87  
+000010EC                            88  
+000010EC                            89  ;COLOR:
+000010EC  2F3C 00FFFFFF             90         MOVE.L #$00FFFFFF, -(A7)
+000010F2  6100 0D04                 91         BSR PONER_COLOR
+000010F6  588F                      92         ADD.L #4, A7
+000010F8                            93  
+000010F8                            94         ;MOVIMIENTO
+000010F8  3C39 00001F08             95         MOVE.W  INTERVALO_CARRETERA,D6
+000010FE                            96         
+000010FE                            97         
+000010FE                            98        ;UN LADO DE LA CARRETERA
+000010FE  3839 00001F04             99         MOVE.W  MOVIMIENTO_CARRETERA,D4
+00001104  3F39 00001EBC            100         MOVE.W  POSICION_LINEA1,-(A7)
+0000110A  3F04                     101         MOVE.W  D4,-(A7)
+0000110C  2F3C 000015E2            102         MOVE.L  #CARRETERA_NORM,-(A7)
+00001112  6100 0D44                103         BSR DIBUJAR_FIGURA
+00001116  508F                     104         ADDQ.L #8,A7
+00001118                           105         
+00001118                           106         ;OTRO LADO CARRETERA
+00001118  3839 00001F04            107         MOVE.W  MOVIMIENTO_CARRETERA,D4
+0000111E  3F39 00001EBE            108         MOVE.W  POSICION_LINEA2,-(A7)
+00001124  3F04                     109         MOVE.W  D4,-(A7)
+00001126  2F3C 000015E2            110         MOVE.L  #CARRETERA_NORM,-(A7)
+0000112C  6100 0D2A                111         BSR DIBUJAR_FIGURA
+00001130  508F                     112         ADDQ.L #8,A7
+00001132                           113  
+00001132                           114         ;RESETEAR CARRETERA O DEJARLA CAER
+00001132  BC7C 0000                115         CMP.W #0,D6
+00001136  6600 04DC                116         BNE RETURN
+0000113A  33FC 0000 00001F04       117         MOVE.W #0,MOVIMIENTO_CARRETERA
+00001142                           118         
+00001142                           119         
+00001142  4E75                     120         RTS
+00001144                           121         
+00001144                           122  SEGUNDA_CARRETERA:
+00001144                           123  
+00001144                           124         ;COMPROBAR SI SE ESTA TRANSICIONANDO
+00001144  0C79 0000 00001F08       125         CMP.W #0,INTERVALO_CARRETERA
+0000114C  6700 04C6                126         BEQ RETURN
+00001150                           127         
+00001150                           128         ;UN LADO DE LA CARRETERA
+00001150  3839 00001F04            129         MOVE.W  MOVIMIENTO_CARRETERA,D4
+00001156  0444 00C8                130         SUB.W   #200,D4
+0000115A  3F39 00001EC0            131         MOVE.W  POSICION_PREVIA_LINEA1,-(A7)
+00001160  3F04                     132         MOVE.W  D4,-(A7)
+00001162  2F3C 000015EC            133         MOVE.L  #CARRETERA_INVERTIDA,-(A7)
+00001168  6100 0CEE                134         BSR DIBUJAR_FIGURA
+0000116C  508F                     135         ADDQ.L #8,A7
+0000116E                           136         
+0000116E                           137         ;OTRO LADO CARRETER       
+0000116E  3839 00001F04            138         MOVE.W  MOVIMIENTO_CARRETERA,D4
+00001174  0444 00C8                139         SUB.W   #200,D4
+00001178  3F39 00001EC2            140         MOVE.W  POSICION_PREVIA_LINEA2,-(A7)
+0000117E  3F04                     141         MOVE.W  D4,-(A7)
+00001180  2F3C 000015EC            142         MOVE.L  #CARRETERA_INVERTIDA,-(A7)
+00001186  6100 0CD0                143         BSR DIBUJAR_FIGURA
+0000118A  508F                     144         ADDQ.L #8,A7
+0000118C                           145         
+0000118C                           146         ;CAMBIO A LA CARRETERA1 UNA VEZ HA FINALIZADO LA TRANSICION
+0000118C                           147         
+0000118C                           148         
+0000118C  0C79 0280 00001F04       149         CMP.W  #ALTURA_PANTALLA,MOVIMIENTO_CARRETERA
+00001194  6D00 047E                150         BLT  RETURN
+00001198  33F9 00001EC0 00001EBC   151         MOVE.W POSICION_PREVIA_LINEA1,POSICION_LINEA1
+000011A2  33F9 00001EC2 00001EBE   152         MOVE.W POSICION_PREVIA_LINEA2,POSICION_LINEA2
+000011AC  33FC 0000 00001F08       153         MOVE.W #0,INTERVALO_CARRETERA
+000011B4                           154                
+000011B4                           155         
+000011B4  4E75                     156         RTS
+000011B6                           157  
+000011B6                           158  
+000011B6                           159  
+000011B6                           160         
+000011B6                           161  TRANSICION:
+000011B6                           162  
+000011B6                           163         ;ELEGIR TIPO DE TRANSICION
+000011B6  0C79 0000 00001F08       164         CMP.W #0,INTERVALO_CARRETERA
+000011BE  6700 0454                165         BEQ RETURN
+000011C2  0C79 0000 00001F0A       166         CMP.W #0,INDICADOR_CARRETERA
+000011CA  6700 011E                167         BEQ TRANSICION_NOR
+000011CE  0C79 0001 00001F0A       168         CMP.W #1,INDICADOR_CARRETERA
+000011D6  6700 000E                169         BEQ TRANSICION_DER
+000011DA  0C79 0002 00001F0A       170         CMP.W #2,INDICADOR_CARRETERA
+000011E2  6700 0084                171         BEQ TRANSICION_IZQ
+000011E6                           172         
+000011E6                           173  TRANSICION_DER:
+000011E6                           174         
+000011E6                           175         ;UN LADO DE LA CARRETERA
+000011E6  3839 00001F04            176         MOVE.W  MOVIMIENTO_CARRETERA,D4
+000011EC  3F39 00001EBC            177         MOVE.W  POSICION_LINEA1,-(A7)
+000011F2  3F04                     178         MOVE.W  D4,-(A7)
+000011F4                           179         
+000011F4                           180         ;COMPROBAR SI ES UNA CURVA GRANDE O PEQUEÑA
+000011F4  3A39 00001EC0            181         MOVE.W  POSICION_PREVIA_LINEA1,D5
+000011FA  9A79 00001EBC            182         SUB.W   POSICION_LINEA1,D5       
+00001200  BA7C 00C8                183         CMP.W   #200,D5
+00001204  6700 0014                184         BEQ     LINEA1_FIGURA3             
+00001208  BA7C FF38                185         CMP.W   #-200,D5
+0000120C  6700 000C                186         BEQ     LINEA1_FIGURA3             
+00001210  2F3C 000015BA            187         MOVE.L  #CARRETERA_INCLINADA1,-(A7)
+00001216  6000 0008                188         BRA     LINEA1_DIBUJAR_DER          
+0000121A                           189  LINEA1_FIGURA3:
+0000121A                           190                
+0000121A  2F3C 000015CE            191        MOVE.L  #CARRETERA_INCLINADA3,-(A7)
+00001220                           192  
+00001220                           193  LINEA1_DIBUJAR_DER:
+00001220                           194         
+00001220  6100 0C36                195         BSR     DIBUJAR_FIGURA
+00001224  508F                     196         ADDQ.L  #8,A7
+00001226                           197         
+00001226                           198         
+00001226                           199         ;OTRO LADO CARRETERA 
+00001226  3839 00001F04            200         MOVE.W  MOVIMIENTO_CARRETERA,D4
+0000122C  3F39 00001EBE            201         MOVE.W  POSICION_LINEA2,-(A7)
+00001232  3F04                     202         MOVE.W  D4,-(A7)
+00001234                           203         
+00001234                           204  
+00001234                           205         ;COMPROBAR SI ES UNA CURVA GRANDE O PEQUEÑA
+00001234  3A39 00001EC0            206         MOVE.W  POSICION_PREVIA_LINEA1,D5
+0000123A  9A79 00001EBC            207         SUB.W   POSICION_LINEA1,D5       
+00001240  BA7C 00C8                208         CMP.W   #200,D5
+00001244  6700 0014                209         BEQ     LINEA2_FIGURA3
+00001248  BA7C FF38                210         CMP.W   #-200,D5
+0000124C  6700 000C                211         BEQ     LINEA2_FIGURA3
+00001250                           212         
+00001250                           213         
+00001250  2F3C 000015BA            214         MOVE.L  #CARRETERA_INCLINADA1,-(A7)
+00001256  6000 0008                215         BRA     LINEA2_DIBUJAR_DER
+0000125A                           216  
+0000125A                           217  LINEA2_FIGURA3:
+0000125A                           218         
+0000125A  2F3C 000015CE            219         MOVE.L  #CARRETERA_INCLINADA3,-(A7)
+00001260                           220  
+00001260                           221  LINEA2_DIBUJAR_DER:
+00001260                           222  
+00001260  6100 0BF6                223         BSR     DIBUJAR_FIGURA
+00001264  508F                     224         ADDQ.L  #8,A7
+00001266                           225  
+00001266  4E75                     226         RTS
+00001268                           227                       
+00001268                           228  TRANSICION_IZQ:
+00001268                           229         ;UN LADO DE LA CARRETERA
+00001268  3839 00001F04            230         MOVE.W  MOVIMIENTO_CARRETERA,D4
+0000126E  3F39 00001EBC            231         MOVE.W  POSICION_LINEA1,-(A7)
+00001274  3F04                     232         MOVE.W  D4,-(A7)
+00001276                           233         
+00001276                           234         ;COMPROBAR SI ES UNA CURVA GRANDE O PEQUEÑA
+00001276  3A39 00001EC0            235         MOVE.W  POSICION_PREVIA_LINEA1,D5
+0000127C  9A79 00001EBC            236         SUB.W   POSICION_LINEA1,D5
+00001282  BA7C 00C8                237         CMP.W   #200,D5
+00001286  6700 0014                238         BEQ     LINEA1_FIGURA4
+0000128A  BA7C FF38                239         CMP.W   #-200,D5
+0000128E  6700 000C                240         BEQ     LINEA1_FIGURA4 
+00001292                           241         
+00001292                           242         
+00001292  2F3C 000015C4            243         MOVE.L  #CARRETERA_INCLINADA2,-(A7)
+00001298  6000 0008                244         BRA     LINEA1_DIBUJAR_IZQ
+0000129C                           245         
+0000129C                           246         
+0000129C                           247  LINEA1_FIGURA4:
+0000129C                           248        
+0000129C  2F3C 000015D8            249        MOVE.L  #CARRETERA_INCLINADA4,-(A7)
+000012A2                           250  
+000012A2                           251  
+000012A2                           252  LINEA1_DIBUJAR_IZQ:
+000012A2  6100 0BB4                253        BSR  DIBUJAR_FIGURA
+000012A6  508F                     254        ADDQ.L #8,A7
+000012A8                           255  
+000012A8                           256        
+000012A8                           257         ;OTRO LADO CARRETERA
+000012A8                           258        
+000012A8  3839 00001F04            259         MOVE.W  MOVIMIENTO_CARRETERA,D4
+000012AE  3F39 00001EBE            260         MOVE.W  POSICION_LINEA2,-(A7)
+000012B4  3F04                     261         MOVE.W  D4,-(A7)
+000012B6                           262         
+000012B6                           263         ;COMPROBAR SI ES UNA CURVA GRANDE O PEQUEÑA
+000012B6  3A39 00001EC0            264         MOVE.W  POSICION_PREVIA_LINEA1,D5
+000012BC  9A79 00001EBC            265         SUB.W   POSICION_LINEA1,D5
+000012C2  BA7C 00C8                266         CMP.W   #200,D5
+000012C6  6700 0014                267         BEQ     LINEA2_FIGURA4
+000012CA  BA7C FF38                268         CMP.W   #-200,D5
+000012CE  6700 000C                269         BEQ     LINEA2_FIGURA4 
+000012D2                           270         
+000012D2                           271         
+000012D2  2F3C 000015C4            272         MOVE.L  #CARRETERA_INCLINADA2,-(A7)
+000012D8  6000 0008                273         BRA     LINEA2_DIBUJAR_IZQ
+000012DC                           274         
+000012DC                           275         
+000012DC                           276  LINEA2_FIGURA4:
+000012DC                           277        
+000012DC  2F3C 000015D8            278        MOVE.L  #CARRETERA_INCLINADA4,-(A7)
+000012E2                           279  
+000012E2                           280  
+000012E2                           281  LINEA2_DIBUJAR_IZQ:
+000012E2                           282  
+000012E2  6100 0B74                283        BSR  DIBUJAR_FIGURA
+000012E6  508F                     284        ADDQ.L #8,A7          
+000012E8                           285         
+000012E8  4E75                     286         RTS
+000012EA                           287         
+000012EA                           288  TRANSICION_NOR:
+000012EA                           289  
+000012EA  3239 00001EBC            290         MOVE.W POSICION_LINEA1,D1
+000012F0  B279 00001EC0            291         CMP.W POSICION_PREVIA_LINEA1,D1
+000012F6  6D00 FEEE                292         BLT.W TRANSICION_DER
+000012FA  6000 FF6C                293         BRA   TRANSICION_IZQ   
+000012FE                           294  
+000012FE                           295  LINEAS_BLANCAS:
+000012FE                           296  
+000012FE  3039 00001F02            297        MOVE.W  MOVIMIENTO_LINEA,D0
+00001304                           298        ;MOVIMIENTO
+00001304  0C79 0064 00001F08       299        CMP.W   #100,INTERVALO_CARRETERA
+0000130C  6700 0010                300        BEQ     CAIDA
+00001310  0440 0014                301        SUB.W   #20,D0
+00001314  33C0 00001EC4            302        MOVE.W  D0,POSICION_INICIAL_LINEAS_BLANCAS
+0000131A  6000 000C                303        BRA     LINEAS_BLANCAS_BUCLE  
+0000131E                           304        
+0000131E                           305  CAIDA:
+0000131E                           306  
+0000131E  33F9 00001F04 00001EC4   307      MOVE.W   MOVIMIENTO_CARRETERA,POSICION_INICIAL_LINEAS_BLANCAS     
+00001328                           308  LINEAS_BLANCAS_BUCLE:       
+00001328                           309         
+00001328                           310         ;FIGURA
+00001328  3039 00001EBC            311         MOVE.W  POSICION_LINEA1,D0
+0000132E  0640 0064                312         ADD.W   #100,D0
+00001332  3F00                     313         MOVE.W  D0,-(A7)
+00001334  3F39 00001EC4            314         MOVE.W  POSICION_INICIAL_LINEAS_BLANCAS,-(A7)
+0000133A  3F3C 0005                315         MOVE.W  #5,-(A7)
+0000133E  3F3C 0014                316         MOVE.W  #20,-(A7)
+00001342  6100 0B4C                317         BSR RECTANGULO
+00001346  508F                     318         ADDQ.L  #8,A7
+00001348                           319         
+00001348                           320         ;BUCLE PARA DIBUJARLAS
+00001348  0679 0032 00001EC4       321         ADD.W   #50,POSICION_INICIAL_LINEAS_BLANCAS
+00001350  0C79 0280 00001EC4       322         CMP.W   #ALTURA_PANTALLA,POSICION_INICIAL_LINEAS_BLANCAS
+00001358  6DCE                     323         BLT     LINEAS_BLANCAS_BUCLE
+0000135A                           324         
+0000135A                           325         ;REINICIAR MOVIMIENTO
+0000135A  0C79 0032 00001F02       326         CMP.W   #50,MOVIMIENTO_LINEA
+00001362  6F00 02B0                327         BLE RETURN
+00001366  33FC 0000 00001F02       328         MOVE.W  #0,MOVIMIENTO_LINEA       
+0000136E                           329  
+0000136E  4E75                     330         RTS
+00001370                           331         
+00001370                           332  AVANZAR_CARRETERA: 
+00001370                           333        
+00001370  49F9 0000160A            334        LEA   POS_Y_ARBOLES,A4
+00001376  3A39 00001F00            335        MOVE.W VELOCIDAD,D5
+0000137C  DB79 00001F02            336        ADD.W D5,MOVIMIENTO_LINEA
+00001382  DB79 00001F04            337        ADD.W D5,MOVIMIENTO_CARRETERA
+00001388  DB54                     338        ADD.W D5,(A4)
+0000138A  DB6C 0002                339        ADD.W D5,2(A4)
+0000138E  DB6C 0004                340        ADD.W D5,4(A4)
+00001392  DB6C 0006                341        ADD.W D5,6(A4)
+00001396  DB6C 0008                342        ADD.W D5,8(A4)
+0000139A  DB79 00001EBA            343        ADD.W D5,CONTADOR_CICLOS
+000013A0  3239 00001EBA            344        MOVE.W CONTADOR_CICLOS,D1
+000013A6  B27C 0000                345        CMP.W #0,D1
+000013AA  6700 0268                346        BEQ RETURN
+000013AE  82FC 1770                347        DIVU.W   #6000,D1
+000013B2  4841                     348        SWAP.W   D1
+000013B4  B27C 0000                349        CMP.W    #0,D1
+000013B8  6700 0004                350        BEQ      INCREMENTO_VELOCIDAD
+000013BC                           351  
+000013BC                           352        
+000013BC                           353        
+000013BC  4E75                     354        RTS
+000013BE                           355        
+000013BE                           356  INCREMENTO_VELOCIDAD:
+000013BE                           357            
+000013BE  5479 00001F00            358            ADD.W #2,VELOCIDAD
+000013C4                           359            
+000013C4  4E75                     360            RTS         
+000013C6                           361           
+000013C6                           362  MOVER_COCHE:  
+000013C6                           363  
+000013C6                           364           ;COMPRUEBA TECLA
+000013C6  3F3C 0044                365           MOVE.W #$44,-(A7)
+000013CA  6100 0AE2                366           BSR CHECK_TECLA
+000013CE                           367           
+000013CE                           368           ;COMPROBAR SI SE MUEVE
+000013CE  B27C 0000                369           CMP.W #0,D1
+000013D2  548F                     370           ADDQ.L #2,A7
+000013D4  6600 0016                371           BNE DERECHA
+000013D8  3F3C 0041                372           MOVE.W #$41,-(A7)
+000013DC  6100 0AD0                373           BSR CHECK_TECLA
+000013E0  B27C 0000                374           CMP.W #0,D1
+000013E4  548F                     375           ADDQ.L #2,A7
+000013E6  6600 000C                376           BNE IZQUIERDA
+000013EA  4E75                     377           RTS
+000013EC                           378   
+000013EC                           379  DERECHA:
+000013EC                           380  
+000013EC  5479 00001EE0            381      ADD.W #2,X_JUGADOR
+000013F2  4E75                     382          RTS
+000013F4                           383      
+000013F4                           384      
+000013F4                           385        
+000013F4                           386  IZQUIERDA:
+000013F4                           387      
+000013F4  5579 00001EE0            388      SUB.W #2,X_JUGADOR
+000013FA                           389      
+000013FA  4E75                     390      RTS    
 000013FC                           391      
-000013FC                           392        
-000013FC                           393  IZQUIERDA:
-000013FC                           394      
-000013FC  5579 00001C6C            395      SUB.W #2,X_CUADRADO
-00001402                           396      
-00001402  4E75                     397      RTS    
-00001404                           398      
-00001404                           399  CAMBIO_CARRETERA:
-00001404                           400  
-00001404                           401        ;EVITAR DIVIDIR ENTRE 0
-00001404  3239 00001C70            402        MOVE.W CONTADOR_CICLOS,D1
-0000140A  B27C 0000                403        CMP.W #0,D1
-0000140E  6700 0216                404        BEQ RETURN
-00001412                           405        
-00001412                           406        ;GENERAR NUMERO ALEATORIO
-00001412  82FC 03E8                407        DIVU.W   #1000,D1
-00001416  4841                     408        SWAP.W   D1
-00001418  3401                     409        MOVE.W D1,D2
-0000141A  B47C 0000                410        CMP.W  #0,D2
-0000141E  6600 0206                411        BNE RETURN    
-00001422  3F3C 0003                412        MOVE.W #3,-(A7)
-00001426  6100 0790                413        BSR ALEATORIO
-0000142A  548F                     414        ADDQ.L #2,A7
-0000142C                           415        
-0000142C                           416        ;ELEGIR CARRETERA
-0000142C  B27C 0000                417        CMP.W  #0,D1
-00001430  6700 0048                418        BEQ POS_CARRETERA_IZQ
-00001434  B27C 0001                419        CMP.W #1,D1
-00001438  6700 000A                420        BEQ POS_CARRETERA_NOR    
-0000143C  B27C 0002                421        CMP.W #2,D1
-00001440  6700 006E                422        BEQ POS_CARRETERA_DER      
-00001444                           423        ;BEQ POS_CARRETERA_DER
-00001444                           424      
-00001444                           425  POS_CARRETERA_NOR:
-00001444                           426  
-00001444                           427        ;ACTUALIZAR POSICIONES
-00001444  33FC 0000 00001CB0       428        MOVE.W #0,INDICADOR_CARRETERA
-0000144C  33FC 00C8 00001C76       429        MOVE.W #200,POSICION_PREVIA_LINEA1
-00001454  33FC 0190 00001C78       430        MOVE.W #400,POSICION_PREVIA_LINEA2
-0000145C  3039 00001C72            431        MOVE.W POSICION_LINEA1,D0
-00001462                           432        
-00001462                           433        ;EVITAR TRANSICIONAR SI TOCA LA MISMA CARRETERA
-00001462  B079 00001C76            434        CMP.W  POSICION_PREVIA_LINEA1,D0
-00001468  6700 01BC                435        BEQ    RETURN
-0000146C  33FC 0064 00001CAE       436        MOVE.W #100,INTERVALO_CARRETERA
-00001474  6100 FD24                437        BSR    TRANSICION
-00001478                           438        
-00001478  4E75                     439        RTS
-0000147A                           440       
-0000147A                           441  POS_CARRETERA_IZQ:
-0000147A                           442        
-0000147A                           443        ;ACTUALIZAR POSICIONES
-0000147A  33FC 0002 00001CB0       444        MOVE.W #2,INDICADOR_CARRETERA
-00001482  33FC 0064 00001C76       445        MOVE.W #100,POSICION_PREVIA_LINEA1
-0000148A  33FC 012C 00001C78       446        MOVE.W #300,POSICION_PREVIA_LINEA2
-00001492  3039 00001C72            447        MOVE.W POSICION_LINEA1,D0
-00001498                           448        
-00001498                           449        ;EVITAR TRANSICIONAR SI TOCA LA MISMA CARRETERA
-00001498  B079 00001C76            450        CMP.W  POSICION_PREVIA_LINEA1,D0
-0000149E  6700 0186                451        BEQ    RETURN
-000014A2  33FC 0064 00001CAE       452        MOVE.W #100,INTERVALO_CARRETERA
-000014AA  6100 FCEE                453        BSR    TRANSICION
-000014AE                           454        
-000014AE  4E75                     455        RTS
-000014B0                           456        
-000014B0                           457  POS_CARRETERA_DER:
-000014B0                           458  
-000014B0                           459        ;ACTUALIZAR POSICIONES
-000014B0  33FC 0001 00001CB0       460        MOVE.W #1,INDICADOR_CARRETERA
-000014B8  33FC 012C 00001C76       461        MOVE.W #300,POSICION_PREVIA_LINEA1
-000014C0  33FC 01F4 00001C78       462        MOVE.W #500,POSICION_PREVIA_LINEA2
-000014C8  3039 00001C72            463        MOVE.W POSICION_LINEA1,D0
-000014CE                           464        
-000014CE                           465        ;EVITAR TRANSICIONAR SI TOCA LA MISMA CARRETERA
-000014CE  B079 00001C76            466        CMP.W  POSICION_PREVIA_LINEA1,D0
-000014D4  6700 0150                467        BEQ    RETURN
-000014D8  33FC 0064 00001CAE       468        MOVE.W #100,INTERVALO_CARRETERA
-000014E0  6100 FCB8                469        BSR    TRANSICION
-000014E4                           470  
-000014E4  4E75                     471        RTS
-000014E6                           472        
-000014E6                           473  
-000014E6                           474         
-000014E6                           475  INICIALIZAR_ARBOLES:
-000014E6                           476  
-000014E6                           477          ;INICIALIZAR REGISTROS
-000014E6  41F9 00001608            478          LEA   POS_INICIAL_ARBOLES,A0
-000014EC  43E8 0014                479          LEA   20(A0),A1
-000014F0                           480           
-000014F0                           481  
-000014F0                           482  BUCLE_INICIALIZAR_ARBOLES: 
-000014F0                           483        
-000014F0                           484         ;NUMEROS ALEATORIOS
-000014F0  3F3C 01E0                485         MOVE.W #ANCHURA_PANTALLA,-(A7)
-000014F4  6100 06C2                486         BSR ALEATORIO
-000014F8  548F                     487         ADDQ.L #2,A7
-000014FA  3401                     488         MOVE.W D1,D2
-000014FC                           489         
-000014FC  3F3C 0280                490         MOVE.W #ALTURA_PANTALLA,-(A7)
-00001500  6100 06B6                491         BSR ALEATORIO
-00001504  548F                     492         ADDQ.L #2,A7
-00001506  0441 0280                493         SUB.W  #ALTURA_PANTALLA,D1
-0000150A                           494         
-0000150A                           495         ;VER SI NO ESTÁ EN MEDIO DE LA CARRETERA
-0000150A  B479 00001C72            496         CMP.W POSICION_LINEA1,D2
-00001510  6D00 000E                497         BLT   SEGUNDA_COMPROBACION
-00001514  B479 00001C74            498         CMP.W POSICION_LINEA2,D2
-0000151A  6E00 0004                499         BGT   SEGUNDA_COMPROBACION
-0000151E  60D0                     500         BRA BUCLE_INICIALIZAR_ARBOLES
-00001520                           501  
-00001520                           502  SEGUNDA_COMPROBACION:
-00001520                           503        
-00001520  0C79 0064 00001CAE       504         CMP.W #100,INTERVALO_CARRETERA
-00001528  6700 0018                505         BEQ   ARRAY
-0000152C  B479 00001C76            506         CMP.W POSICION_PREVIA_LINEA1,D2
-00001532  6D00 000E                507         BLT   ARRAY
-00001536  B479 00001C78            508         CMP.W POSICION_PREVIA_LINEA2,D2
-0000153C  6E00 0004                509         BGT   ARRAY
-00001540  60AE                     510         BRA   BUCLE_INICIALIZAR_ARBOLES         
-00001542                           511         
-00001542                           512  ARRAY:
-00001542                           513        
-00001542  30C2                     514        MOVE.W D2,(A0)+
-00001544  30C1                     515        MOVE.W D1,(A0)+
-00001546  B3C8                     516        CMP.L  A0,A1
-00001548  6700 00DC                517        BEQ    RETURN
-0000154C  60A2                     518        BRA    BUCLE_INICIALIZAR_ARBOLES
-0000154E                           519        
-0000154E                           520  MOSTRAR_ARBOLES:
-0000154E                           521         
-0000154E                           522         ;INICIALIZAR REGISTROS
-0000154E  47F9 00001608            523         LEA   POS_INICIAL_ARBOLES,A3
-00001554  43EB 0014                524         LEA   20(A3),A1
-00001558  49F9 0000161C            525         LEA   POS_Y_ARBOLES,A4
-0000155E                           526         
-0000155E                           527       
-0000155E                           528  BUCLE_MOSTRAR_ARBOLES: 
-0000155E                           529        
-0000155E                           530        ;MOVER A LA REGISTROS LOS VALORES DEL ARRAY
-0000155E  301B                     531         MOVE.W  (A3)+,D0           
-00001560  321B                     532         MOVE.W  (A3)+,D1
-00001562  3414                     533         MOVE.W  (A4),D2 
-00001564                           534         
-00001564                           535         ;Sumamos el movimiento a la coordenada Y
-00001564  D242                     536         ADD.W   D2,D1
-00001566  B27C 0280                537         CMP.W   #ALTURA_PANTALLA,D1
-0000156A  6E00 0010                538         BGT     SUMA
-0000156E  3F00                     539         MOVE.W  D0,-(A7)
-00001570  3F01                     540         MOVE.W  D1,-(A7)  
-00001572  6100 029C                541         BSR DIBUJAR_ARBOL
-00001576  588F                     542         ADDQ.L  #4,A7        
-00001578  6000 000A                543         BRA SIGUIENTE_ARBOL
-0000157C                           544  SUMA:
-0000157C                           545       
-0000157C  38BC 0000                546        MOVE.W #0,(A4)    
-00001580  6100 0010                547        BSR    REGENERAR_ARBOL
-00001584                           548              
-00001584                           549  SIGUIENTE_ARBOL:      
-00001584                           550         
-00001584  548C                     551         ADDQ.L #2,A4
-00001586  B7C9                     552         CMP.L  A1,A3
-00001588  66D4                     553         BNE BUCLE_MOSTRAR_ARBOLES
-0000158A  49F9 0000161C            554         LEA   POS_Y_ARBOLES,A4
-00001590  4E75                     555         RTS      
-00001592                           556         
-00001592                           557  REGENERAR_ARBOL:         
-00001592                           558          
-00001592  3F3C 01E0                559         MOVE.W #ANCHURA_PANTALLA,-(A7)
-00001596  6100 0620                560         BSR ALEATORIO
-0000159A  548F                     561         ADDQ.L #2,A7
-0000159C  3401                     562         MOVE.W D1,D2
-0000159E                           563         
-0000159E  3F3C 0280                564         MOVE.W #ALTURA_PANTALLA,-(A7)
-000015A2  6100 0614                565         BSR ALEATORIO
-000015A6  548F                     566         ADDQ.L #2,A7
-000015A8  0441 0280                567         SUB.W  #ALTURA_PANTALLA,D1
-000015AC                           568         
-000015AC                           569         ;VER SI NO ESTÁ EN MEDIO DE LA CARRETERA
-000015AC  B479 00001C72            570         CMP.W POSICION_LINEA1,D2
-000015B2  6D00 000E                571         BLT   NUEVO_ARBOL
-000015B6  B479 00001C74            572         CMP.W POSICION_LINEA2,D2
-000015BC  6E00 0004                573         BGT   NUEVO_ARBOL
-000015C0  60D0                     574         BRA REGENERAR_ARBOL
-000015C2                           575         
-000015C2                           576  NUEVO_ARBOL:
-000015C2                           577     
-000015C2  3742 FFFC                578        MOVE.W D2,-4(A3)
-000015C6  3741 FFFE                579        MOVE.W D1,-2(A3)
-000015CA                           580        
-000015CA  4E75                     581        RTS
-000015CC                           582         
-000015CC                           583            
-000015CC                           584        
-000015CC                           585  ;TENGO QUE HARDCODEAR LAS CARRETERAS INCLINADAS PORQUE NO SE DIBUJA CORRECTAMENTE CON VARIABLES   
-000015CC                           586  CARRETERA_INCLINADA1:
-000015CC= 0002                     587       DC.W 2
-000015CE= 0000 0000                588       DC.W 0,0
-000015D2= 0064 FF38                589       DC.W 100,-200
-000015D6                           590            
-000015D6                           591  CARRETERA_INCLINADA2:
-000015D6= 0002                     592       DC.W 2
-000015D8= 0000 0000                593       DC.W 0,0
-000015DC= FF9C FF38                594       DC.W -100,-200
-000015E0                           595       
-000015E0                           596       
-000015E0                           597  CARRETERA_INCLINADA3:
-000015E0= 0002                     598       DC.W 2
-000015E2= 0000 0000                599       DC.W 0,0
-000015E6= 00C8 FF38                600       DC.W 200,-200
-000015EA                           601       
-000015EA                           602  CARRETERA_INCLINADA4:
-000015EA= 0002                     603       DC.W 2
-000015EC= 0000 0000                604       DC.W 0,0
-000015F0= FF38 FF38                605       DC.W -200,-200
-000015F4                           606       
-000015F4                           607  CARRETERA_NORM:
-000015F4= 0002                     608      DC.W 2
-000015F6= 0000 0000                609      DC.W 0,0
-000015FA= 0000 0280                610      DC.W 0,ALTURA_PANTALLA
-000015FE                           611      
-000015FE                           612      
-000015FE                           613  CARRETERA_INVERTIDA:
-000015FE= 0002                     614      DC.W 2
-00001600= 0000 0000                615      DC.W 0,0
-00001604= 0000 FD80                616      DC.W 0,-ALTURA_PANTALLA
-00001608                           617  
-00001608                           618  POS_INICIAL_ARBOLES:
-00001608                           619      
-00001608                           620      DS.W 10  
-0000161C                           621      
-0000161C                           622  POS_Y_ARBOLES:
-0000161C                           623  
-0000161C                           624      DS.W 5
-00001626                           625  
-00001626                           626  RETURN:
-00001626                           627  
-00001626  4E75                     628      RTS
-00001628                           629      
-00001628                           630      
-00001628                           631  ;empieza codigo felipe
-00001628                           632  
-00001628                           633  
-00001628                           634  RESET_SEGUNDOS:
-00001628  33FC 0000 00001C82       635      MOVE.W  #0,SEGUNDOS
-00001630  4E75                     636      RTS
-00001632                           637  RESET_GASOLINA:
-00001632  33FC 0064 00001C7C       638      MOVE.W  #100,GASOLINA
-0000163A  4E75                     639      RTS
-0000163C                           640  
-0000163C                           641  UPDATE_SEGUNDOS:
-0000163C  5279 00001C86            642      ADD.W #1,CENT_COUNT ;SUMO UNO AL CONTADOR DE CENTESIMAS
-00001642  0C79 0064 00001C86       643      CMP.W #100,CENT_COUNT   ;HA LLEGADO A 100?
-0000164A  6600 0012                644      BNE UPDATE_SEGUNDOS_FINAL     ;SI NO, CORTAR Y VOLVER A CONTAR
-0000164E  33FC 0000 00001C86       645      MOVE.W  #0,CENT_COUNT   
-00001656  5279 00001C82            646      ADD.W   #1,SEGUNDOS     ;SUMAR 1 A LOS SEGUNDOS
-0000165C  4E75                     647      RTS
-0000165E                           648  UPDATE_SEGUNDOS_FINAL:
-0000165E  4E75                     649      RTS 
-00001660                           650      
-00001660                           651  UPDATE_GAS_TIEMPO:
-00001660  5279 00001C88            652      ADD.W #1,CENT_GAS_COUNT ;SUMO UNO AL CONTADOR DE CENTESIMAS
-00001666  0C79 000C 00001C88       653      CMP.W #12,CENT_GAS_COUNT   ;HA LLEGADO?
-0000166E  6600 0010                654      BNE UPDATE_GAS_TIEMPO_FINAL     ;SI NO, CORTAR Y VOLVER A CONTAR
-00001672  33FC 0000 00001C88       655      MOVE.W  #0,CENT_GAS_COUNT   
-0000167A  6100 0006                656      BSR UPDATE_GAS  ;UPDATEAMOS LA GASOLINA
-0000167E  4E75                     657      RTS
-00001680                           658  UPDATE_GAS_TIEMPO_FINAL:
-00001680  4E75                     659      RTS 
-00001682                           660  
-00001682                           661  UPDATE_GAS:
-00001682  5379 00001C7C            662      SUB.W   #1,GASOLINA ;RESTAMOS UNO A LA GASOLINA
-00001688  0C79 0000 00001C7C       663      CMP.W   #0,GASOLINA
-00001690  6E00 000C                664      BGT UPDATE_GAS_FINAL
-00001694  33FC 0001 00001C84       665      MOVE.W  #1,GAME_OVER    ;SIN GASOLINA = FIN DEL JUEGO
-0000169C  4E75                     666      RTS
-0000169E                           667  UPDATE_GAS_FINAL:
-0000169E  4E75                     668      RTS
-000016A0                           669  
-000016A0                           670  RECARGAR_GASOLINA:
-000016A0  3039 00001C80            671      MOVE.W  CANTIDAD_RECARGA_GAS, D0
-000016A6  D179 00001C7C            672      ADD.W   D0,GASOLINA
-000016AC  3039 00001C7C            673      MOVE.W  GASOLINA, D0
-000016B2  B079 00001C7E            674      CMP.W   GAS_MAX, D0     ;GASOLINA - GAS_MAX
-000016B8  6F00 000E                675      BLE RECARGAR_GASOLINA_FINAL ;SI ES MENOR O IGUAL SALIMOS
-000016BC  33F9 00001C7E 00001C7C   676      MOVE.W  GAS_MAX,GASOLINA    ;SI SE PASA DEL MAXIMO PONEMOS UN LIMITE    
-000016C6  4E75                     677      RTS
-000016C8                           678  RECARGAR_GASOLINA_FINAL:
-000016C8  4E75                     679      RTS
-000016CA                           680  
-000016CA                           681  DIBUJAR_SIMBOLO_GAS:
-000016CA  4E56 0000                682      LINK    A6,#0
-000016CE                           683  
-000016CE  302E 000A                684      MOVE.W  10(A6),D0
-000016D2  3F00                     685      MOVE.W  D0,-(A7)
-000016D4                           686      
-000016D4  302E 0008                687      MOVE.W  8(A6),D0
-000016D8  3F00                     688      MOVE.W  D0,-(A7)
-000016DA                           689      
-000016DA  2F3C 00001B12            690      MOVE.L  #FIGURA_GASOLINA,-(A7)
-000016E0  6100 0524                691      BSR DIBUJAR_FIGURA
-000016E4  508F                     692      ADD.L   #8,A7
-000016E6                           693      
-000016E6  4E5E                     694      UNLK    A6
-000016E8  4E75                     695      RTS
-000016EA                           696  
-000016EA                           697  DIBUJAR_GASOLINA:
-000016EA  2F3C 0000FFFF            698      MOVE.L #$0000FFFF, -(A7)
-000016F0  6100 04B4                699      BSR PONER_COLOR
-000016F4  588F                     700      ADD.L #4, A7
-000016F6                           701  
-000016F6  3039 00001C92            702      MOVE.W  POS_X, D0
-000016FC  3F00                     703      MOVE.W  D0,-(A7)
-000016FE                           704      
-000016FE  3039 00001C94            705      MOVE.W  POS_Y, D0
-00001704  3239 00001C7E            706      MOVE.W  GAS_MAX, D1
-0000170A  D041                     707      ADD.W   D1,D0
-0000170C  33C0 00001C8E            708      MOVE.W  D0,MAX_MAS_OFF
-00001712  3F00                     709      MOVE.W  D0,-(A7)
-00001714                           710  
-00001714  3039 00001C90            711      MOVE.W  ANCHO_GAS, D0
-0000171A  3F00                     712      MOVE.W  D0,-(A7)
-0000171C                           713  
-0000171C  3039 00001C7C            714      MOVE.W  GASOLINA, D0
-00001722  323C 0000                715      MOVE.W  #0,D1
-00001726  9240                     716      SUB.W   D0,D1
-00001728  3F01                     717      MOVE.W  D1,-(A7)
-0000172A                           718      
-0000172A  6100 0512                719      BSR RECTANGULO
-0000172E  508F                     720      ADD.L   #8,A7
-00001730                           721      
-00001730  6198                     722      BSR DIBUJAR_SIMBOLO_GAS
-00001732                           723      
-00001732                           724      ;AÑADIMOS BORDE DE LA GASOLINA
-00001732                           725      
-00001732  41F9 00001B2C            726      LEA BORDE_GASOLINA,A0
-00001738  3039 00001C90            727      MOVE.W  ANCHO_GAS,D0
-0000173E  3239 00001C7E            728      MOVE.W  GAS_MAX,D1
-00001744                           729      
-00001744  3140 0006                730      MOVE.W  D0,6(A0)    ;METEMOS EL ANCHO EN EL LA X DEL P2
-00001748  3140 000A                731      MOVE.W  D0,10(A0)    ;POSICION X ES ANCHO P3
-0000174C  3141 000C                732      MOVE.W  D1,12(A0)   ;POSICION Y ES ALTO P3
-00001750  3141 0010                733      MOVE.W  D1,16(A0)   ;SOLO ALTO P4
-00001754                           734      
-00001754  3039 00001C92            735      MOVE.W  POS_X,D0
-0000175A  3F00                     736      MOVE.W  D0,-(A7)
-0000175C                           737      
-0000175C  3039 00001C94            738      MOVE.W  POS_Y,D0
-00001762  3F00                     739      MOVE.W  D0,-(A7)
-00001764                           740      
-00001764  2F3C 00001B2C            741      MOVE.L  #BORDE_GASOLINA,-(A7)
-0000176A  6100 049A                742      BSR DIBUJAR_FIGURA
-0000176E  508F                     743      ADD.L   #8,A7
-00001770                           744      
-00001770  4E75                     745      RTS
-00001772                           746  
-00001772                           747  
-00001772                           748  DIBUJAR_ENEMIGO:
-00001772  2F3C 00FFFFFF            749      MOVE.L #$00FFFFFF, -(A7)
-00001778  6100 042C                750      BSR PONER_COLOR
-0000177C  588F                     751      ADD.L #4, A7
-0000177E                           752      
-0000177E  41F9 00001B42            753      LEA RUEDA_ENEMIGO,A0
-00001784  3039 00001C9E            754      MOVE.W  ANCHO_ENEMIGO,D0
-0000178A  5C40                     755      ADD.W   #6,D0
-0000178C                           756      
-0000178C  3140 0006                757      MOVE.W  D0,6(A0)
-00001790  3140 000A                758      MOVE.W  D0,10(A0)
-00001794                           759      
-00001794  3039 00001C9A            760      MOVE.W  POS_X_ENEMIGO,D0
-0000179A  5740                     761      SUB.W   #3,D0
-0000179C  3F00                     762      MOVE.W   D0,-(A7)    
-0000179E                           763      
-0000179E  3039 00001C9C            764      MOVE.W  POS_Y_ENEMIGO,D0  ;RUEDA DE ARRIBA
-000017A4  5A40                     765      ADD.W   #5,D0
-000017A6  3F00                     766      MOVE.W   D0,-(A7)
-000017A8                           767      
-000017A8  2F3C 00001B42            768      MOVE.L  #RUEDA_ENEMIGO,-(A7)
-000017AE  6100 0456                769      BSR DIBUJAR_FIGURA
-000017B2  508F                     770      ADD.L   #8,A7
-000017B4                           771        
-000017B4  3039 00001C9A            772      MOVE.W  POS_X_ENEMIGO,D0
-000017BA  5740                     773      SUB.W   #3,D0
-000017BC  3F00                     774      MOVE.W   D0,-(A7)
-000017BE                           775      
-000017BE  3039 00001C9C            776      MOVE.W  POS_Y_ENEMIGO,D0    ;RUEDA DE ABAJO
-000017C4  D079 00001CA0            777      ADD.W   ALTO_ENEMIGO,D0
-000017CA  0440 000A                778      SUB.W   #10,D0
-000017CE  3F00                     779      MOVE.W   D0,-(A7)
-000017D0                           780      
-000017D0  2F3C 00001B42            781      MOVE.L  #RUEDA_ENEMIGO,-(A7)
-000017D6  6100 042E                782      BSR DIBUJAR_FIGURA
-000017DA  508F                     783      ADD.L   #8,A7
-000017DC                           784      
-000017DC  2F3C 000000FF            785      MOVE.L #$000000FF, -(A7)
-000017E2  6100 03C2                786      BSR PONER_COLOR
-000017E6  588F                     787      ADD.L #4, A7
-000017E8                           788      
-000017E8  3039 00001C9A            789      MOVE.W  POS_X_ENEMIGO,D0
-000017EE  3F00                     790      MOVE.W   D0,-(A7)
-000017F0                           791      
-000017F0  3039 00001C9C            792      MOVE.W  POS_Y_ENEMIGO,D0
-000017F6  3F00                     793      MOVE.W   D0,-(A7)
-000017F8                           794      
-000017F8  3039 00001C9E            795      MOVE.W  ANCHO_ENEMIGO,D0
-000017FE  3F00                     796      MOVE.W   D0,-(A7)
-00001800                           797      
-00001800  3039 00001CA0            798      MOVE.W  ALTO_ENEMIGO,D0
-00001806  3F00                     799      MOVE.W   D0,-(A7)
-00001808                           800      
-00001808  6100 0434                801      BSR RECTANGULO
-0000180C  508F                     802      ADD.L   #8,A7
-0000180E                           803      
-0000180E  4E75                     804      RTS
-00001810                           805  
-00001810                           806  ;Introducir en la pila las coordenadas para dibujar el arbol
-00001810                           807  ;Primero la (X) y luego la (Y), limpiar 4 bites
-00001810                           808  DIBUJAR_ARBOL:
-00001810  4E56 0000                809      LINK    A6,#0
-00001814                           810  
-00001814  2F3C 0013458B            811      MOVE.L  #$0013458B, -(A7) ;MARRON
-0000181A  6100 038A                812      BSR     PONER_COLOR
-0000181E  588F                     813      ADD.L   #4, A7
-00001820                           814  
-00001820  3F2E 000A                815      MOVE.W  10(A6),-(A7)     
-00001824  3F2E 0008                816      MOVE.W  8(A6),-(A7)
-00001828  3F39 00001CA2            817      MOVE.W  ANCHO_TRONCO,-(A7)          
-0000182E  3F39 00001CA4            818      MOVE.W  ALTO_TRONCO,-(A7)           
-00001834  6100 0408                819      BSR     RECTANGULO
-00001838  508F                     820      ADD.L   #8, A7
-0000183A                           821  
-0000183A  2F3C 0000FF00            822      MOVE.L  #$0000FF00, -(A7)   ;VERDE
-00001840  6100 0364                823      BSR     PONER_COLOR
-00001844  588F                     824      ADD.L   #4, A7
-00001846                           825  
-00001846  302E 000A                826      MOVE.W  10(A6),D0
-0000184A  0440 0016                827      SUB.W   #22, D0             ; Centrar respecto al tronco
-0000184E  3F00                     828      MOVE.W  D0, -(A7)           ; X
-00001850                           829      
-00001850  302E 0008                830      MOVE.W  8(A6),D0
-00001854  0440 003C                831      SUB.W   #60, D0             ; Poner sobre el tronco
-00001858  3F00                     832      MOVE.W  D0, -(A7)           ; Y
-0000185A                           833      
-0000185A  2F3C 00001B58            834      MOVE.L  #TRIANGULO_GRANDE, -(A7)
-00001860  6100 03A4                835      BSR     DIBUJAR_FIGURA
-00001864  508F                     836      ADD.L   #8, A7
-00001866                           837  
-00001866  4E5E                     838      UNLK    A6
-00001868  4E75                     839      RTS
-0000186A                           840  
-0000186A                           841  DIBUJAR_TIEMPO:
-0000186A  4280                     842      CLR.L   D0
-0000186C  3039 00001C82            843      MOVE.W  SEGUNDOS,D0
-00001872  80FC 000A                844      DIVU.W  #10,D0           ; D0 / 10 -> Cociente en parte alta, Resto en parte baja
-00001876                           845      
-00001876  3400                     846      MOVE.W  D0,D2            ; D2 - Decenas
-00001878  33C2 00001C8C            847      MOVE.W  D2,DECENAS
-0000187E  4840                     848      SWAP    D0               
-00001880  3600                     849      MOVE.W  D0,D3            ; D3 - Unidades
-00001882  33C3 00001C8A            850      MOVE.W  D3,UNIDADES
-00001888                           851      
-00001888                           852      ; Dibujar Decenas
-00001888  3F3C 0064                853      MOVE.W  #100,-(A7)       ; X
-0000188C  3F3C 0032                854      MOVE.W  #50,-(A7)        ; Y
-00001890  3F39 00001C8C            855      MOVE.W  DECENAS,-(A7)         
-00001896  6100 001A                856      BSR     DIBUJAR_NUMERO
-0000189A  5C8F                     857      ADD.L   #6,A7
-0000189C                           858      
-0000189C                           859      ; Dibujar Unidades
-0000189C  3F3C 007D                860      MOVE.W  #125,-(A7)       ; X (un poco más a la derecha)
-000018A0  3F3C 0032                861      MOVE.W  #50,-(A7)        ; Y
-000018A4  3F39 00001C8A            862      MOVE.W  UNIDADES,-(A7)            
-000018AA  6100 0006                863      BSR     DIBUJAR_NUMERO
-000018AE  5C8F                     864      ADD.L   #6,A7
-000018B0  4E75                     865      RTS
-000018B2                           866  
-000018B2                           867  DIBUJAR_NUMERO:
-000018B2  4E56 0000                868      LINK    A6,#0
-000018B6  2F3C 0000FFFF            869      MOVE.L  #$0000FFFF, -(A7)   ;AMARILLO
-000018BC  6100 02E8                870      BSR     PONER_COLOR
-000018C0  588F                     871      ADD.L   #4, A7
-000018C2                           872      
-000018C2  302E 0008                873      MOVE.W  8(A6),D0        ; Obtener el dígito (0-9)
-000018C6                           874      
-000018C6  B07C 0000                875      CMP.W   #0,D0
-000018CA  6700 004E                876      BEQ     CALL_D0
-000018CE  B07C 0001                877      CMP.W   #1,D0
-000018D2  6700 004E                878      BEQ     CALL_D1
-000018D6  B07C 0002                879      CMP.W   #2,D0
-000018DA  6700 004E                880      BEQ     CALL_D2
-000018DE  B07C 0003                881      CMP.W   #3,D0
-000018E2  6700 004E                882      BEQ     CALL_D3
-000018E6  B07C 0004                883      CMP.W   #4,D0
-000018EA  6700 004E                884      BEQ     CALL_D4
-000018EE  B07C 0005                885      CMP.W   #5,D0
-000018F2  6700 004E                886      BEQ     CALL_D5
-000018F6  B07C 0006                887      CMP.W   #6,D0
-000018FA  6700 004E                888      BEQ     CALL_D6
-000018FE  B07C 0007                889      CMP.W   #7,D0
-00001902  6700 004E                890      BEQ     CALL_D7
-00001906  B07C 0008                891      CMP.W   #8,D0
-0000190A  6700 004E                892      BEQ     CALL_D8
-0000190E  B07C 0009                893      CMP.W   #9,D0
-00001912  6700 004E                894      BEQ     CALL_D9
-00001916  6000 004E                895      BRA     FIN_DIB_NUM
-0000191A                           896  
-0000191A  6100 004E                897  CALL_D0: BSR DIBUJAR_0
-0000191E  6000 0046                898      BRA FIN_DIB_NUM
-00001922  6100 0060                899  CALL_D1: BSR DIBUJAR_1
-00001926  6000 003E                900      BRA FIN_DIB_NUM
-0000192A  6100 0062                901  CALL_D2: BSR DIBUJAR_2
-0000192E  6000 0036                902      BRA FIN_DIB_NUM
-00001932  6100 0070                903  CALL_D3: BSR DIBUJAR_3
-00001936  6000 002E                904      BRA FIN_DIB_NUM
-0000193A  6100 007E                905  CALL_D4: BSR DIBUJAR_4
-0000193E  6000 0026                906      BRA FIN_DIB_NUM
-00001942  6100 0088                907  CALL_D5: BSR DIBUJAR_5
-00001946  6000 001E                908      BRA FIN_DIB_NUM
-0000194A  6100 0096                909  CALL_D6: BSR DIBUJAR_6
-0000194E  6000 0016                910      BRA FIN_DIB_NUM
-00001952  6100 00A8                911  CALL_D7: BSR DIBUJAR_7
-00001956  6000 000E                912      BRA FIN_DIB_NUM
-0000195A  6100 00AE                913  CALL_D8: BSR DIBUJAR_8
-0000195E  6000 0006                914      BRA FIN_DIB_NUM
-00001962  6100 00C4                915  CALL_D9: BSR DIBUJAR_9
-00001966                           916  
-00001966                           917  FIN_DIB_NUM:
-00001966  4E5E                     918      UNLK    A6
-00001968  4E75                     919      RTS
-0000196A                           920  
-0000196A                           921  DIBUJAR_0:
-0000196A  6100 00D6                922      BSR SEG_SUP
-0000196E  6100 0108                923      BSR SEG_INF
-00001972  6100 0122                924      BSR SEG_V_SI
-00001976  6100 0136                925      BSR SEG_V_SD
-0000197A  6100 0150                926      BSR SEG_V_II
-0000197E  6100 016A                927      BSR SEG_V_ID
-00001982  4E75                     928      RTS
-00001984                           929  
-00001984                           930  DIBUJAR_1:
-00001984  6100 0128                931      BSR SEG_V_SD
-00001988  6100 0160                932      BSR SEG_V_ID
-0000198C  4E75                     933      RTS
-0000198E                           934  
-0000198E                           935  DIBUJAR_2:
-0000198E  6100 00B2                936      BSR SEG_SUP
-00001992  6100 011A                937      BSR SEG_V_SD
-00001996  6100 00C2                938      BSR SEG_CEN
-0000199A  6100 0130                939      BSR SEG_V_II
-0000199E  6100 00D8                940      BSR SEG_INF
-000019A2  4E75                     941      RTS
-000019A4                           942  
-000019A4                           943  DIBUJAR_3:
-000019A4  6100 009C                944      BSR SEG_SUP
-000019A8  6100 0104                945      BSR SEG_V_SD
-000019AC  6100 00AC                946      BSR SEG_CEN
-000019B0  6100 0138                947      BSR SEG_V_ID
-000019B4  6100 00C2                948      BSR SEG_INF
-000019B8  4E75                     949      RTS
-000019BA                           950  
-000019BA                           951  DIBUJAR_4:
-000019BA  6100 00DA                952      BSR SEG_V_SI
-000019BE  6100 009A                953      BSR SEG_CEN
-000019C2  6100 00EA                954      BSR SEG_V_SD
-000019C6  6100 0122                955      BSR SEG_V_ID
-000019CA  4E75                     956      RTS
-000019CC                           957  
-000019CC                           958  DIBUJAR_5:
-000019CC  6100 0074                959      BSR SEG_SUP
-000019D0  6100 00C4                960      BSR SEG_V_SI
-000019D4  6100 0084                961      BSR SEG_CEN
-000019D8  6100 0110                962      BSR SEG_V_ID
-000019DC  6100 009A                963      BSR SEG_INF
-000019E0  4E75                     964      RTS
-000019E2                           965  
-000019E2                           966  DIBUJAR_6:
-000019E2  6100 005E                967      BSR SEG_SUP
-000019E6  6100 00AE                968      BSR SEG_V_SI
-000019EA  6100 00E0                969      BSR SEG_V_II
-000019EE  6100 006A                970      BSR SEG_CEN
-000019F2  6100 00F6                971      BSR SEG_V_ID
-000019F6  6100 0080                972      BSR SEG_INF
-000019FA  4E75                     973      RTS
-000019FC                           974  
-000019FC                           975  DIBUJAR_7:
-000019FC  6100 0044                976      BSR SEG_SUP
-00001A00  6100 00AC                977      BSR SEG_V_SD
-00001A04  6100 00E4                978      BSR SEG_V_ID
-00001A08  4E75                     979      RTS
-00001A0A                           980  
-00001A0A                           981  DIBUJAR_8:
-00001A0A  6100 0036                982      BSR SEG_SUP
-00001A0E  6100 004A                983      BSR SEG_CEN
-00001A12  6100 0064                984      BSR SEG_INF
-00001A16  6100 007E                985      BSR SEG_V_SI
-00001A1A  6100 0092                986      BSR SEG_V_SD
-00001A1E  6100 00AC                987      BSR SEG_V_II
-00001A22  6100 00C6                988      BSR SEG_V_ID
-00001A26  4E75                     989      RTS
-00001A28                           990  
-00001A28                           991  DIBUJAR_9:
-00001A28  6100 0018                992      BSR SEG_SUP
-00001A2C  6100 0068                993      BSR SEG_V_SI
-00001A30  6100 007C                994      BSR SEG_V_SD
-00001A34  6100 0024                995      BSR SEG_CEN
-00001A38  6100 00B0                996      BSR SEG_V_ID
-00001A3C  6100 003A                997      BSR SEG_INF
-00001A40  4E75                     998      RTS
-00001A42                           999  
-00001A42                          1000  ; SUB-FUNCIONES DE SEGMENTOS
-00001A42                          1001  SEG_SUP: ; Horizontal Superior
-00001A42  3F2E 000C               1002              MOVE.W 12(A6),-(A7)  ; X
-00001A46  3F2E 000A               1003              MOVE.W 10(A6),-(A7)  ; Y
-00001A4A  3F3C 0014               1004              MOVE.W #20,-(A7)     ; ANCHO
-00001A4E  3F3C 0002               1005              MOVE.W #2,-(A7)      ; ALTO
-00001A52  6100 01EA               1006              BSR RECTANGULO
-00001A56  508F                    1007              ADD.L #8,A7
-00001A58  4E75                    1008              RTS
-00001A5A                          1009  
-00001A5A                          1010  SEG_CEN: ; Horizontal Central
-00001A5A  3F2E 000C               1011              MOVE.W 12(A6),-(A7)  ; X
-00001A5E  302E 000A               1012              MOVE.W 10(A6),D0
-00001A62  0640 0014               1013              ADD.W #20,D0
-00001A66  3F00                    1014              MOVE.W D0,-(A7)      ; Y+20
-00001A68  3F3C 0014               1015              MOVE.W #20,-(A7)     ; ANCHO
-00001A6C  3F3C 0002               1016              MOVE.W #2,-(A7)      ; ALTO
-00001A70  6100 01CC               1017              BSR RECTANGULO
-00001A74  508F                    1018              ADD.L #8,A7
-00001A76  4E75                    1019              RTS
-00001A78                          1020  
-00001A78                          1021  SEG_INF: ; Horizontal Inferior
-00001A78  3F2E 000C               1022              MOVE.W 12(A6),-(A7)  ; X
-00001A7C  302E 000A               1023              MOVE.W 10(A6),D0
-00001A80  0640 0028               1024              ADD.W #40,D0
-00001A84  3F00                    1025              MOVE.W D0,-(A7)      ; Y+40
-00001A86  3F3C 0014               1026              MOVE.W #20,-(A7)     ; ANCHO
-00001A8A  3F3C 0002               1027              MOVE.W #2,-(A7)      ; ALTO
-00001A8E  6100 01AE               1028              BSR RECTANGULO
-00001A92  508F                    1029              ADD.L #8,A7
-00001A94  4E75                    1030              RTS
-00001A96                          1031  
-00001A96                          1032  SEG_V_SI: ; Vertical Superior Izquierda
-00001A96  3F2E 000C               1033              MOVE.W 12(A6),-(A7)  ; X
-00001A9A  3F2E 000A               1034              MOVE.W 10(A6),-(A7)  ; Y
-00001A9E  3F3C 0002               1035              MOVE.W #2,-(A7)      ; ANCHO
-00001AA2  3F3C 0014               1036              MOVE.W #20,-(A7)     ; ALTO
-00001AA6  6100 0196               1037              BSR RECTANGULO
-00001AAA  508F                    1038              ADD.L #8,A7
-00001AAC  4E75                    1039              RTS
-00001AAE                          1040  
-00001AAE                          1041  SEG_V_SD: ; Vertical Superior Derecha
-00001AAE  302E 000C               1042              MOVE.W 12(A6),D0
-00001AB2  0640 0012               1043              ADD.W #18,D0
-00001AB6  3F00                    1044              MOVE.W D0,-(A7)      ; X+18
-00001AB8  3F2E 000A               1045              MOVE.W 10(A6),-(A7)  ; Y
-00001ABC  3F3C 0002               1046              MOVE.W #2,-(A7)      ; ANCHO
-00001AC0  3F3C 0014               1047              MOVE.W #20,-(A7)     ; ALTO
-00001AC4  6100 0178               1048              BSR RECTANGULO
-00001AC8  508F                    1049              ADD.L #8,A7
-00001ACA  4E75                    1050              RTS
-00001ACC                          1051  
-00001ACC                          1052  SEG_V_II: ; Vertical Inferior Izquierda
-00001ACC  3F2E 000C               1053              MOVE.W 12(A6),-(A7)  ; X
-00001AD0  302E 000A               1054              MOVE.W 10(A6),D0
-00001AD4  0640 0014               1055              ADD.W #20,D0
-00001AD8  3F00                    1056              MOVE.W D0,-(A7)      ; Y+20
-00001ADA  3F3C 0002               1057              MOVE.W #2,-(A7)      ; ANCHO
-00001ADE  3F3C 0014               1058              MOVE.W #20,-(A7)     ; ALTO
-00001AE2  6100 015A               1059              BSR RECTANGULO
-00001AE6  508F                    1060              ADD.L #8,A7
-00001AE8  4E75                    1061              RTS
-00001AEA                          1062  
-00001AEA                          1063  SEG_V_ID: ; Vertical Inferior Derecha
-00001AEA  322E 000C               1064              MOVE.W 12(A6),D1
-00001AEE  0641 0012               1065              ADD.W #18,D1
-00001AF2  3F01                    1066              MOVE.W D1,-(A7)      ; X+18
-00001AF4  302E 000A               1067              MOVE.W 10(A6),D0
-00001AF8  0640 0014               1068              ADD.W #20,D0
-00001AFC  3F00                    1069              MOVE.W D0,-(A7)      ; Y+20
-00001AFE  3F3C 0002               1070              MOVE.W #2,-(A7)      ; ANCHO
-00001B02  3F3C 0014               1071              MOVE.W #20,-(A7)     ; ALTO
-00001B06  6100 0136               1072              BSR RECTANGULO
-00001B0A  508F                    1073              ADD.L #8,A7
-00001B0C  4E75                    1074              RTS
-00001B0E                          1075  
-00001B0E                          1076  ;termina codigo felipe
-00001B0E                          1077  
-00001B0E                          1078   
-00001B0E                          1079      
-00001B0E  FFFF FFFF               1080      SIMHALT             ; halt simulator
-00001B12                          1081      
-00001B12                          1082  FIGURA_GASOLINA:
-00001B12= 0006                    1083      DC.W    6
-00001B14= 000A 0005               1084      DC.W    10,5
-00001B18= 000A 0014               1085      DC.W    10,20
-00001B1C= 0019 0014               1086      DC.W    25,20
-00001B20= 0019 0000               1087      DC.W    25,0
-00001B24= 000F 0000               1088      DC.W    15,0
-00001B28= 000A 0005               1089      DC.W    10,5
-00001B2C                          1090  
-00001B2C                          1091  BORDE_GASOLINA:
-00001B2C= 0005                    1092      DC.W    5
-00001B2E= 0000 0000               1093      DC.W    0,0
-00001B32= 0000 0000               1094      DC.W    0,0 ;ANCHO SOLO
-00001B36= 0000 0000               1095      DC.W    0,0 ;ANCHO Y ALTO
-00001B3A= 0000 0000               1096      DC.W    0,0 ;ALTO SOLO
-00001B3E= 0000 0000               1097      DC.W    0,0
-00001B42                          1098  
-00001B42                          1099  RUEDA_ENEMIGO:
-00001B42= 0005                    1100      DC.W    5
-00001B44= 0000 0000               1101      DC.W    0,0
-00001B48= 001A 0000               1102      DC.W    26,0    ;P2 = ANCHO + 6, 0
-00001B4C= 001A 0005               1103      DC.W    26,5    ;P3 = ANCHO + 6, 5
-00001B50= 0000 0005               1104      DC.W    0,5
-00001B54= 0000 0000               1105      DC.W    0,0
-00001B58                          1106      
-00001B58                          1107  TRIANGULO_GRANDE:  
-00001B58= 0004                    1108      DC.W    4
-00001B5A= 001E 0000               1109      DC.W    30,0
-00001B5E= 0000 003C               1110      DC.W    0,60
-00001B62= 003C 003C               1111      DC.W    60,60
-00001B66= 001E 0000               1112      DC.W    30,0  
-00001B6A                          1113  
-00001B6A                          1114      INCLUDE GROUTINES_FINAL.X68
-00001B6A                          1115  ;FUNCION QUE ESPERA 1 CENTESIMA DE SEGUNDO
-00001B6A                          1116  WAIT_CENT:
-00001B6A  7008                    1117      MOVE.L  #8,D0  ;PONEMOS LA FUNCION 8 QUE ES LA DEL TIEMPO
-00001B6C  4E4F                    1118      TRAP    #15    ;EJECUTAMOS LA TRAP 15
-00001B6E  2A01                    1119      MOVE.L  D1,D5  ;COPIAMOS EL REGISTRO A D5
-00001B70                          1120  TIMER:
-00001B70  4E4F                    1121      TRAP    #15    ;EJECUTAMOS LA TRAP 15 PARA OBTENER EL TIEMPO DE NUEVO
-00001B72  BA41                    1122      CMP     D1,D5  ;COMPARAMOS LAS CENTESIMAS DE D1 CON D5
-00001B74  67FA                    1123      BEQ     TIMER  ;SI SON IGUALES, ES QUE NO HA PASADO 1 CENTESIMA DE SEGUNDO
-00001B76  4E75                    1124      RTS            ;RETORNO
-00001B78                          1125      
-00001B78                          1126  LIMPIAR_PANTALLA:
-00001B78  700B                    1127      MOVE.L #11,D0     ;FUNCION DE LIMPIAR PANTALLA
-00001B7A  223C 0000FF00           1128      MOVE.L #$FF00,D1  ;FUNCION DE LIMPIAR PANTALLA
-00001B80  4E4F                    1129      TRAP   #15        ;LIMPIAR PANTALLA
-00001B82  4E75                    1130      RTS
-00001B84                          1131      
-00001B84                          1132      
-00001B84                          1133  MOSTRAR_PANTALLA:
-00001B84  705E                    1134      MOVE.L #94,D0  ;COPIAR EL BUFFER A LA PANTALLA PRINCIPAL
-00001B86  4E4F                    1135      TRAP   #15
-00001B88  4E75                    1136      RTS
-00001B8A                          1137     
-00001B8A                          1138  ;Lee de la pila el color. Un longword ".L" $00bbggrr  
-00001B8A                          1139  MODO_GRAFICO:
-00001B8A  7211                    1140      MOVE.L  #17,D1    ;ACTIVAR EL DOBLE BUFFER
-00001B8C  705C                    1141      MOVE.L  #92,D0    ;MODO DIBUJO
-00001B8E  4E4F                    1142      TRAP    #15 
-00001B90  4E75                    1143      RTS
-00001B92                          1144      
-00001B92                          1145  ;Lee de la pila el color. Un longword ".L" $00bbggrr 
-00001B92                          1146  COLOR_BORDE:
-00001B92  222F 0004               1147      MOVE.L  4(A7),D1 ;COLOR VERDE
-00001B96  7050                    1148      MOVE.L  #80,D0      
-00001B98  4E4F                    1149      TRAP    #15
-00001B9A  4E75                    1150      RTS
-00001B9C                          1151  
-00001B9C                          1152  ;Lee de la pila el color. Un longword ".L" $00bbggrr 
-00001B9C                          1153  COLOR_RELLENO:
-00001B9C  222F 0004               1154      MOVE.L  4(A7),D1 ;COLOR VERDE RELLENO
-00001BA0  7051                    1155      MOVE.L  #81,D0      
-00001BA2  4E4F                    1156      TRAP    #15
-00001BA4  4E75                    1157      RTS
-00001BA6                          1158  
-00001BA6                          1159  ;Pone el color que se quiera para dibujar
-00001BA6                          1160  ;Lee de la pila el color. Un longword ".L" $00bbggrr 
-00001BA6                          1161  PONER_COLOR:
-00001BA6  222F 0004               1162      MOVE.L  4(A7),D1 ;COLOR 
-00001BAA  7050                    1163      MOVE.L  #80,D0      
-00001BAC  4E4F                    1164      TRAP    #15
-00001BAE                          1165  
-00001BAE  222F 0004               1166      MOVE.L  4(A7),D1 ;COLOR RELLENO
-00001BB2  7051                    1167      MOVE.L  #81,D0      
-00001BB4  4E4F                    1168      TRAP    #15
-00001BB6  4E75                    1169      RTS
-00001BB8                          1170      
-00001BB8                          1171  ;Genera un numero aleatorio entre 0 y el numero en la pila
-00001BB8                          1172  ;El numero generado queda en d1
-00001BB8                          1173  ;Lee de la pila un número word ".W"
-00001BB8                          1174  
-00001BB8                          1175  ALEATORIO:
-00001BB8  0679 4E2B 00001BFC      1176      ADD.W   #20011,RVAL
-00001BC0  2039 00001BFE           1177      MOVE.L    AVAL,D0
-00001BC6  E398                    1178      ROL.L       #1,D0
-00001BC8  23C0 00001BFE           1179      MOVE.L      D0,AVAL
-00001BCE  2239 00001C02           1180      MOVE.L    BVAL,D1
-00001BD4  E699                    1181      ROR.L       #3,D1
-00001BD6  23C1 00001C02           1182      MOVE.L      D1,BVAL
-00001BDC  B141                    1183      EOR.W       D0,D1
-00001BDE  3039 00001BFC           1184      MOVE.W    RVAL,D0
-00001BE4  B141                    1185      EOR.W       D0,D1
-00001BE6  C2BC 0000FFFF           1186      AND.L   #$FFFF,D1
-00001BEC  302F 0004               1187      MOVE.W   4(A7),D0
-00001BF0  82C0                    1188      DIVU.W      D0,D1
-00001BF2  4841                    1189      SWAP           D1
-00001BF4  C2BC 0000FFFF           1190      AND.L   #$FFFF,D1
-00001BFA  4E75                    1191      RTS
-00001BFC                          1192  
-00001BFC= 0000                    1193  RVAL:    DC.W 0
-00001BFE= 16038ACE                1194  AVAL:    DC.L $16038ACE
-00001C02= 5274BDF0                1195  BVAL:    DC.L $5274BDF0
-00001C06                          1196  
-00001C06                          1197  ;DIBUJA LA FIGURA 
-00001C06                          1198  ;INTRODUCIR EN LA PILA LA DIRECCIÓN DE LA FIGURA
-00001C06                          1199  ;INTRODUCIR POSICION X DE LA FIGURA EN PANTALLA UN WORD .W
-00001C06                          1200  ;INTRODUCIR POSICION Y DE LA FIGURA EN PANTALLA UN WORD .W
-00001C06                          1201  DIBUJAR_FIGURA:
-00001C06  206F 0004               1202      MOVE.L 4(A7),A0
-00001C0A  3E18                    1203      MOVE.W (A0)+,D7   ;LEEMOS CUANTAS LINEAS TIENE LA FIGURA
-00001C0C  5547                    1204      SUB.W  #2,D7
-00001C0E  4281                    1205      CLR.L D1
-00001C10  4282                    1206      CLR.L D2
-00001C12  4283                    1207      CLR.L D3
-00001C14  4284                    1208      CLR.L D4
-00001C16  303C 0054               1209      MOVE.W #84,D0
-00001C1A                          1210      
-00001C1A  3218                    1211      MOVE.W (A0)+,D1
-00001C1C  3418                    1212      MOVE.W (A0)+,D2
-00001C1E                          1213      
-00001C1E  D26F 000A               1214      ADD.W  10(A7),D1
-00001C22  D46F 0008               1215      ADD.W  8(A7),D2
-00001C26                          1216      
-00001C26                          1217  FIG_LP:
-00001C26                          1218  
-00001C26  3618                    1219      MOVE.W (A0)+,D3
-00001C28  3818                    1220      MOVE.W (A0)+,D4
-00001C2A  D66F 000A               1221      ADD.W  10(A7),D3
-00001C2E  D86F 0008               1222      ADD.W  8(A7),D4
-00001C32                          1223      
-00001C32  4E4F                    1224      TRAP #15
-00001C34                          1225  
-00001C34  3203                    1226      MOVE.W D3,D1
-00001C36  3404                    1227      MOVE.W D4,D2
-00001C38                          1228  
-00001C38  51CF FFEC               1229      DBRA.W D7,FIG_LP
-00001C3C                          1230  
-00001C3C  4E75                    1231      RTS
-00001C3E                          1232  
-00001C3E                          1233  ;HAY QUE INTRODUCIR EN LA PILA
-00001C3E                          1234  ;WORD ".W" X
-00001C3E                          1235  ;WORD ".W" Y
-00001C3E                          1236  ;WORD ".W" ANCHO
-00001C3E                          1237  ;WORD ".W" ALTO
-00001C3E                          1238  RECTANGULO:
-00001C3E  4281                    1239      CLR.L D1
-00001C40  4282                    1240      CLR.L D2
-00001C42                          1241  
-00001C42  322F 000A               1242      MOVE.W 10(A7),D1
-00001C46  342F 0008               1243      MOVE.W 8(A7),D2
-00001C4A  2601                    1244      MOVE.L   D1,D3
-00001C4C  2802                    1245      MOVE.L   D2,D4
-00001C4E  D66F 0006               1246      ADD.W  6(A7),D3
-00001C52  D86F 0004               1247      ADD.W  4(A7),D4
-00001C56                          1248  
-00001C56  7057                    1249      MOVE.L #87,D0
-00001C58  4E4F                    1250      TRAP #15
-00001C5A                          1251  
-00001C5A  4E75                    1252      RTS
-00001C5C                          1253  
-00001C5C                          1254  ;COMPRUEBA SI UNA TECLA ESTÁ PULSADA
-00001C5C                          1255  ;INTRODUCIR EL CODIGO DE LA TECLA EN LA PILA ".W"
-00001C5C                          1256  ;PONE UN 0 EN D1 SI LA TECLA NO ESTÁ PULSADA
-00001C5C                          1257  ;SI ESTÁ PULSADA EN D1 HABRÁ UN VALOR DISTINTO DE 0
-00001C5C                          1258  CHECK_TECLA:
-00001C5C  4281                    1259      CLR.L   D1
-00001C5E  322F 0004               1260      MOVE.W  4(A7),D1  ;CODIGO DE TECLA TECLA EN D1
-00001C62  7013                    1261      MOVE.L  #19,D0    ;
-00001C64  4E4F                    1262      TRAP    #15       ;EJECUTAMOS LA FUNCION DE COMPROBAR SI LA TECLA ESTA PULSADA
-00001C66  4E75                    1263      RTS
-00001C68                          1264  
-00001C68                          1265  
-00001C68                          1266  
-00001C68                          1267  -------------------- end include --------------------
-00001C68                          1268      
-00001C68                          1269  * Put variables and constants here
-00001C68= 0028                    1270  ANCHO_CUADRADO: DC.W 40
-00001C6A= 0050                    1271  ALTO_CUADRADO: DC.W 80
-00001C6C= 00F0                    1272  X_CUADRADO: DC.W 240
-00001C6E= 00F0                    1273  Y_CUADRADO: DC.W 240
-00001C70= 0000                    1274  CONTADOR_CICLOS: DC.W 0
-00001C72= 00C8                    1275  POSICION_LINEA1: DC.W 200
-00001C74= 0190                    1276  POSICION_LINEA2: DC.W 400
-00001C76= 00C8                    1277  POSICION_PREVIA_LINEA1: DC.W 200
-00001C78= 0190                    1278  POSICION_PREVIA_LINEA2: DC.W 400
-00001C7A= 0000                    1279  POSICION_INICIAL_LINEAS_BLANCAS DC.W 0
-00001C7C                          1280  
-00001C7C                          1281  
-00001C7C= 0064                    1282  GASOLINA    DC.W 100
-00001C7E= 0064                    1283  GAS_MAX     DC.W 100
-00001C80= 0014                    1284  CANTIDAD_RECARGA_GAS DC.W 20
-00001C82= 0000                    1285  SEGUNDOS    DC.W 0
-00001C84= 00                      1286  GAME_OVER   DC.B 0
-00001C86= 0000                    1287  CENT_COUNT  DC.W 0
-00001C88= 0000                    1288  CENT_GAS_COUNT  DC.W 0
-00001C8A                          1289  
-00001C8A= 0000                    1290  UNIDADES    DC.W    0
-00001C8C= 0000                    1291  DECENAS     DC.W    0
-00001C8E                          1292  
-00001C8E= 0000                    1293  MAX_MAS_OFF DC.W 0
-00001C90= 0014                    1294  ANCHO_GAS   DC.W 20
-00001C92= 000D                    1295  POS_X       DC.W 13
-00001C94= 003C                    1296  POS_Y       DC.W 60
-00001C96                          1297  
-00001C96= 0005                    1298  POS_X_SIMBOLO_GAS DC.W  5
-00001C98= 001E                    1299  POS_Y_SIMBOLO_GAS DC.W  30
-00001C9A                          1300  
-00001C9A= 0032                    1301  POS_X_ENEMIGO   DC.W    50
-00001C9C= 0014                    1302  POS_Y_ENEMIGO   DC.W    20
-00001C9E= 001E                    1303  ANCHO_ENEMIGO   DC.W    30
-00001CA0= 0028                    1304  ALTO_ENEMIGO    DC.W    40 
-00001CA2                          1305  
-00001CA2= 0010                    1306  ANCHO_TRONCO    DC.W    16
-00001CA4= 0019                    1307  ALTO_TRONCO     DC.W    25
-00001CA6                          1308  
-00001CA6                          1309  
-00001CA6= 0002                    1310  VELOCIDAD DC.W 2
-00001CA8= 0000                    1311  MOVIMIENTO_LINEA  DC.W 0
-00001CAA= 0000                    1312  MOVIMIENTO_CARRETERA DC.W 0
-00001CAC= 0000                    1313  MOVIMIENTO_ARBOLES   DC.W 0
-00001CAE= 0000                    1314  INTERVALO_CARRETERA DC.W 0
-00001CB0= 0000                    1315  INDICADOR_CARRETERA DC.W 0
-00001CB2= 0005                    1316  ARBOLES_POR_DIBUJAR DC.W 5
-00001CB4                          1317      END    START        ; last line of source
+000013FC                           392  CAMBIO_CARRETERA:
+000013FC                           393  
+000013FC                           394        ;EVITAR DIVIDIR ENTRE 0
+000013FC  3239 00001EBA            395        MOVE.W CONTADOR_CICLOS,D1
+00001402  B27C 0000                396        CMP.W #0,D1
+00001406  6700 020C                397        BEQ RETURN
+0000140A                           398        
+0000140A                           399        ;GENERAR NUMERO ALEATORIO
+0000140A  82FC 03E8                400        DIVU.W   #1000,D1
+0000140E  4841                     401        SWAP.W   D1
+00001410  3401                     402        MOVE.W D1,D2
+00001412  B47C 0000                403        CMP.W  #0,D2
+00001416  6600 01FC                404        BNE RETURN    
+0000141A  3F3C 0003                405        MOVE.W #3,-(A7)
+0000141E  6100 09EA                406        BSR ALEATORIO
+00001422  548F                     407        ADDQ.L #2,A7
+00001424                           408        
+00001424                           409        ;ELEGIR CARRETERA
+00001424  B27C 0000                410        CMP.W  #0,D1
+00001428  6700 0048                411        BEQ POS_CARRETERA_IZQ
+0000142C  B27C 0001                412        CMP.W #1,D1
+00001430  6700 000A                413        BEQ POS_CARRETERA_NOR    
+00001434  B27C 0002                414        CMP.W #2,D1
+00001438  6700 006E                415        BEQ POS_CARRETERA_DER      
+0000143C                           416        ;BEQ POS_CARRETERA_DER
+0000143C                           417      
+0000143C                           418  POS_CARRETERA_NOR:
+0000143C                           419  
+0000143C                           420        ;ACTUALIZAR POSICIONES
+0000143C  33FC 0000 00001F0A       421        MOVE.W #0,INDICADOR_CARRETERA
+00001444  33FC 00C8 00001EC0       422        MOVE.W #200,POSICION_PREVIA_LINEA1
+0000144C  33FC 0190 00001EC2       423        MOVE.W #400,POSICION_PREVIA_LINEA2
+00001454  3039 00001EBC            424        MOVE.W POSICION_LINEA1,D0
+0000145A                           425        
+0000145A                           426        ;EVITAR TRANSICIONAR SI TOCA LA MISMA CARRETERA
+0000145A  B079 00001EC0            427        CMP.W  POSICION_PREVIA_LINEA1,D0
+00001460  6700 01B2                428        BEQ    RETURN
+00001464  33FC 0064 00001F08       429        MOVE.W #100,INTERVALO_CARRETERA
+0000146C  6100 FD48                430        BSR    TRANSICION
+00001470                           431        
+00001470  4E75                     432        RTS
+00001472                           433       
+00001472                           434  POS_CARRETERA_IZQ:
+00001472                           435        
+00001472                           436        ;ACTUALIZAR POSICIONES
+00001472  33FC 0002 00001F0A       437        MOVE.W #2,INDICADOR_CARRETERA
+0000147A  33FC 0064 00001EC0       438        MOVE.W #100,POSICION_PREVIA_LINEA1
+00001482  33FC 012C 00001EC2       439        MOVE.W #300,POSICION_PREVIA_LINEA2
+0000148A  3039 00001EBC            440        MOVE.W POSICION_LINEA1,D0
+00001490                           441        
+00001490                           442        ;EVITAR TRANSICIONAR SI TOCA LA MISMA CARRETERA
+00001490  B079 00001EC0            443        CMP.W  POSICION_PREVIA_LINEA1,D0
+00001496  6700 017C                444        BEQ    RETURN
+0000149A  33FC 0064 00001F08       445        MOVE.W #100,INTERVALO_CARRETERA
+000014A2  6100 FD12                446        BSR    TRANSICION
+000014A6                           447        
+000014A6  4E75                     448        RTS
+000014A8                           449        
+000014A8                           450  POS_CARRETERA_DER:
+000014A8                           451  
+000014A8                           452        ;ACTUALIZAR POSICIONES
+000014A8  33FC 0001 00001F0A       453        MOVE.W #1,INDICADOR_CARRETERA
+000014B0  33FC 012C 00001EC0       454        MOVE.W #300,POSICION_PREVIA_LINEA1
+000014B8  33FC 01F4 00001EC2       455        MOVE.W #500,POSICION_PREVIA_LINEA2
+000014C0  3039 00001EBC            456        MOVE.W POSICION_LINEA1,D0
+000014C6                           457        
+000014C6                           458        ;EVITAR TRANSICIONAR SI TOCA LA MISMA CARRETERA
+000014C6  B079 00001EC0            459        CMP.W  POSICION_PREVIA_LINEA1,D0
+000014CC  6700 0146                460        BEQ    RETURN
+000014D0  33FC 0064 00001F08       461        MOVE.W #100,INTERVALO_CARRETERA
+000014D8  6100 FCDC                462        BSR    TRANSICION
+000014DC                           463  
+000014DC  4E75                     464        RTS
+000014DE                           465        
+000014DE                           466  
+000014DE                           467         
+000014DE                           468  INICIALIZAR_ARBOLES:
+000014DE                           469  
+000014DE                           470          ;INICIALIZAR REGISTROS
+000014DE  41F9 000015F6            471          LEA   POS_INICIAL_ARBOLES,A0
+000014E4  43E8 0014                472          LEA   20(A0),A1
+000014E8                           473           
+000014E8                           474  
+000014E8                           475  BUCLE_INICIALIZAR_ARBOLES: 
+000014E8                           476        
+000014E8                           477         ;NUMEROS ALEATORIOS
+000014E8  3F3C 01E0                478         MOVE.W #ANCHURA_PANTALLA,-(A7)
+000014EC  6100 091C                479         BSR ALEATORIO
+000014F0  548F                     480         ADDQ.L #2,A7
+000014F2  3401                     481         MOVE.W D1,D2
+000014F4                           482         
+000014F4  3F3C 0280                483         MOVE.W #ALTURA_PANTALLA,-(A7)
+000014F8  6100 0910                484         BSR ALEATORIO
+000014FC  548F                     485         ADDQ.L #2,A7
+000014FE  0441 0280                486         SUB.W  #ALTURA_PANTALLA,D1
+00001502                           487         
+00001502                           488         ;VER SI NO ESTÁ EN MEDIO DE LA CARRETERA
+00001502  B479 00001EBC            489         CMP.W POSICION_LINEA1,D2
+00001508  6D00 000E                490         BLT   ARRAY
+0000150C  B479 00001EBE            491         CMP.W POSICION_LINEA2,D2
+00001512  6E00 0004                492         BGT   ARRAY
+00001516  60D0                     493         BRA BUCLE_INICIALIZAR_ARBOLES         
+00001518                           494         
+00001518                           495  ARRAY:
+00001518                           496        
+00001518  30C2                     497        MOVE.W D2,(A0)+
+0000151A  30C1                     498        MOVE.W D1,(A0)+
+0000151C  B3C8                     499        CMP.L  A0,A1
+0000151E  6700 00F4                500        BEQ    RETURN
+00001522  60C4                     501        BRA    BUCLE_INICIALIZAR_ARBOLES
+00001524                           502        
+00001524                           503  MOSTRAR_ARBOLES:
+00001524                           504         
+00001524                           505         ;INICIALIZAR REGISTROS
+00001524  47F9 000015F6            506         LEA   POS_INICIAL_ARBOLES,A3
+0000152A  43EB 0014                507         LEA   20(A3),A1
+0000152E  49F9 0000160A            508         LEA   POS_Y_ARBOLES,A4
+00001534                           509         
+00001534                           510       
+00001534                           511  BUCLE_MOSTRAR_ARBOLES: 
+00001534                           512        
+00001534                           513        ;MOVER A LA REGISTROS LOS VALORES DEL ARRAY
+00001534  301B                     514         MOVE.W  (A3)+,D0           
+00001536  321B                     515         MOVE.W  (A3)+,D1
+00001538  3414                     516         MOVE.W  (A4),D2 
+0000153A                           517         
+0000153A                           518         ;Sumamos el movimiento a la coordenada Y
+0000153A  D242                     519         ADD.W   D2,D1
+0000153C  B27C 0280                520         CMP.W   #ALTURA_PANTALLA,D1
+00001540  6E00 0010                521         BGT     SUMA
+00001544  3F00                     522         MOVE.W  D0,-(A7)
+00001546  3F01                     523         MOVE.W  D1,-(A7)  
+00001548  6100 0518                524         BSR DIBUJAR_ARBOL
+0000154C  588F                     525         ADDQ.L  #4,A7        
+0000154E  6000 000A                526         BRA SIGUIENTE_ARBOL
+00001552                           527  SUMA:
+00001552                           528       
+00001552  38BC 0000                529        MOVE.W #0,(A4)    
+00001556  6100 0010                530        BSR    REGENERAR_ARBOL
+0000155A                           531              
+0000155A                           532  SIGUIENTE_ARBOL:      
+0000155A                           533         
+0000155A  548C                     534         ADDQ.L #2,A4
+0000155C  B7C9                     535         CMP.L  A1,A3
+0000155E  66D4                     536         BNE BUCLE_MOSTRAR_ARBOLES
+00001560  49F9 0000160A            537         LEA   POS_Y_ARBOLES,A4
+00001566  4E75                     538         RTS      
+00001568                           539         
+00001568                           540  REGENERAR_ARBOL:         
+00001568                           541          
+00001568  3F3C 01E0                542         MOVE.W #ANCHURA_PANTALLA,-(A7)
+0000156C  6100 089C                543         BSR ALEATORIO
+00001570  548F                     544         ADDQ.L #2,A7
+00001572  3401                     545         MOVE.W D1,D2
+00001574                           546         
+00001574  323C FFEC                547         MOVE.W #-20,D1
+00001578                           548         
+00001578                           549         ;VER SI NO ESTÁ EN MEDIO DE LA CARRETERA
+00001578  0C79 0064 00001F08       550         CMP.W #100,INTERVALO_CARRETERA
+00001580  6700 0018                551         BEQ   SEGUNDA_COMPROBACION
+00001584  B479 00001EBC            552         CMP.W POSICION_LINEA1,D2
+0000158A  6D00 0024                553         BLT   NUEVO_ARBOL
+0000158E  B479 00001EBE            554         CMP.W POSICION_LINEA2,D2
+00001594  6E00 001A                555         BGT   NUEVO_ARBOL
+00001598  60CE                     556         BRA REGENERAR_ARBOL
+0000159A                           557         
+0000159A                           558  SEGUNDA_COMPROBACION:
+0000159A                           559        
+0000159A                           560         
+0000159A  B479 00001EC0            561         CMP.W POSICION_PREVIA_LINEA1,D2
+000015A0  6D00 000E                562         BLT   NUEVO_ARBOL
+000015A4  B479 00001EC2            563         CMP.W POSICION_PREVIA_LINEA2,D2
+000015AA  6E00 0004                564         BGT   NUEVO_ARBOL
+000015AE  60B8                     565         BRA   REGENERAR_ARBOL
+000015B0                           566         
+000015B0                           567  NUEVO_ARBOL:
+000015B0                           568     
+000015B0  3742 FFFC                569        MOVE.W D2,-4(A3)
+000015B4  3741 FFFE                570        MOVE.W D1,-2(A3)
+000015B8                           571        
+000015B8  4E75                     572        RTS
+000015BA                           573         
+000015BA                           574            
+000015BA                           575        
+000015BA                           576  ;TENGO QUE HARDCODEAR LAS CARRETERAS INCLINADAS PORQUE NO SE DIBUJA CORRECTAMENTE CON VARIABLES   
+000015BA                           577  CARRETERA_INCLINADA1:
+000015BA= 0002                     578       DC.W 2
+000015BC= 0000 0000                579       DC.W 0,0
+000015C0= 0064 FF38                580       DC.W 100,-200
+000015C4                           581            
+000015C4                           582  CARRETERA_INCLINADA2:
+000015C4= 0002                     583       DC.W 2
+000015C6= 0000 0000                584       DC.W 0,0
+000015CA= FF9C FF38                585       DC.W -100,-200
+000015CE                           586       
+000015CE                           587       
+000015CE                           588  CARRETERA_INCLINADA3:
+000015CE= 0002                     589       DC.W 2
+000015D0= 0000 0000                590       DC.W 0,0
+000015D4= 00C8 FF38                591       DC.W 200,-200
+000015D8                           592       
+000015D8                           593  CARRETERA_INCLINADA4:
+000015D8= 0002                     594       DC.W 2
+000015DA= 0000 0000                595       DC.W 0,0
+000015DE= FF38 FF38                596       DC.W -200,-200
+000015E2                           597       
+000015E2                           598  CARRETERA_NORM:
+000015E2= 0002                     599      DC.W 2
+000015E4= 0000 0000                600      DC.W 0,0
+000015E8= 0000 0280                601      DC.W 0,ALTURA_PANTALLA
+000015EC                           602      
+000015EC                           603      
+000015EC                           604  CARRETERA_INVERTIDA:
+000015EC= 0002                     605      DC.W 2
+000015EE= 0000 0000                606      DC.W 0,0
+000015F2= 0000 FD80                607      DC.W 0,-ALTURA_PANTALLA
+000015F6                           608  
+000015F6                           609  POS_INICIAL_ARBOLES:
+000015F6                           610      
+000015F6                           611      DS.W 10  
+0000160A                           612      
+0000160A                           613  POS_Y_ARBOLES:
+0000160A                           614  
+0000160A                           615      DS.W 5
+00001614                           616  
+00001614                           617  RETURN:
+00001614                           618  
+00001614  4E75                     619      RTS
+00001616                           620      
+00001616                           621      
+00001616                           622  ;empieza codigo felipe
+00001616                           623  
+00001616                           624  
+00001616                           625  RESET_SEGUNDOS:
+00001616  33FC 0000 00001ECC       626      MOVE.W  #0,SEGUNDOS
+0000161E  4E75                     627      RTS
+00001620                           628  RESET_GASOLINA:
+00001620  33FC 0064 00001EC6       629      MOVE.W  #100,GASOLINA
+00001628  4E75                     630      RTS
+0000162A                           631  
+0000162A                           632  UPDATE_SEGUNDOS:
+0000162A  5279 00001ED0            633      ADD.W #1,CENT_COUNT ;SUMO UNO AL CONTADOR DE CENTESIMAS
+00001630  0C79 0064 00001ED0       634      CMP.W #100,CENT_COUNT   ;HA LLEGADO A 100?
+00001638  6600 0012                635      BNE UPDATE_SEGUNDOS_FINAL     ;SI NO, CORTAR Y VOLVER A CONTAR
+0000163C  33FC 0000 00001ED0       636      MOVE.W  #0,CENT_COUNT   
+00001644  5279 00001ECC            637      ADD.W   #1,SEGUNDOS     ;SUMAR 1 A LOS SEGUNDOS
+0000164A  4E75                     638      RTS
+0000164C                           639  UPDATE_SEGUNDOS_FINAL:
+0000164C  4E75                     640      RTS 
+0000164E                           641      
+0000164E                           642  UPDATE_GAS_TIEMPO:
+0000164E  5279 00001ED2            643      ADD.W #1,CENT_GAS_COUNT ;SUMO UNO AL CONTADOR DE CENTESIMAS
+00001654  0C79 000C 00001ED2       644      CMP.W #12,CENT_GAS_COUNT   ;HA LLEGADO?
+0000165C  6600 0010                645      BNE UPDATE_GAS_TIEMPO_FINAL     ;SI NO, CORTAR Y VOLVER A CONTAR
+00001660  33FC 0000 00001ED2       646      MOVE.W  #0,CENT_GAS_COUNT   
+00001668  6100 0006                647      BSR UPDATE_GAS  ;UPDATEAMOS LA GASOLINA
+0000166C  4E75                     648      RTS
+0000166E                           649  UPDATE_GAS_TIEMPO_FINAL:
+0000166E  4E75                     650      RTS 
+00001670                           651  
+00001670                           652  UPDATE_GAS:
+00001670  5379 00001EC6            653      SUB.W   #1,GASOLINA ;RESTAMOS UNO A LA GASOLINA
+00001676  0C79 0000 00001EC6       654      CMP.W   #0,GASOLINA
+0000167E  6E00 000C                655      BGT UPDATE_GAS_FINAL
+00001682  33FC 0001 00001ECE       656      MOVE.W  #1,GAME_OVER    ;SIN GASOLINA = FIN DEL JUEGO
+0000168A  4E75                     657      RTS
+0000168C                           658  UPDATE_GAS_FINAL:
+0000168C  4E75                     659      RTS
+0000168E                           660  
+0000168E                           661  RECARGAR_GASOLINA:
+0000168E  3039 00001ECA            662      MOVE.W  CANTIDAD_RECARGA_GAS, D0
+00001694  D179 00001EC6            663      ADD.W   D0,GASOLINA
+0000169A  3039 00001EC6            664      MOVE.W  GASOLINA, D0
+000016A0  B079 00001EC8            665      CMP.W   GAS_MAX, D0     ;GASOLINA - GAS_MAX
+000016A6  6F00 000E                666      BLE RECARGAR_GASOLINA_FINAL ;SI ES MENOR O IGUAL SALIMOS
+000016AA  33F9 00001EC8 00001EC6   667      MOVE.W  GAS_MAX,GASOLINA    ;SI SE PASA DEL MAXIMO PONEMOS UN LIMITE    
+000016B4  4E75                     668      RTS
+000016B6                           669  RECARGAR_GASOLINA_FINAL:
+000016B6  4E75                     670      RTS
+000016B8                           671  
+000016B8                           672  DIBUJAR_SIMBOLO_GAS:
+000016B8  4E56 0000                673      LINK    A6,#0
+000016BC                           674  
+000016BC  302E 000A                675      MOVE.W  10(A6),D0
+000016C0  3F00                     676      MOVE.W  D0,-(A7)
+000016C2                           677      
+000016C2  302E 0008                678      MOVE.W  8(A6),D0
+000016C6  3F00                     679      MOVE.W  D0,-(A7)
+000016C8                           680      
+000016C8  2F3C 00001D64            681      MOVE.L  #FIGURA_GASOLINA,-(A7)
+000016CE  6100 0788                682      BSR DIBUJAR_FIGURA
+000016D2  508F                     683      ADD.L   #8,A7
+000016D4                           684      
+000016D4  4E5E                     685      UNLK    A6
+000016D6  4E75                     686      RTS
+000016D8                           687  
+000016D8                           688  DIBUJAR_GASOLINA:
+000016D8  2F3C 0000FFFF            689      MOVE.L #$0000FFFF, -(A7)
+000016DE  6100 0718                690      BSR PONER_COLOR
+000016E2  588F                     691      ADD.L #4, A7
+000016E4                           692  
+000016E4  3039 00001EEC            693      MOVE.W  POS_X, D0
+000016EA  3F00                     694      MOVE.W  D0,-(A7)
+000016EC                           695      
+000016EC  3039 00001EEE            696      MOVE.W  POS_Y, D0
+000016F2  3239 00001EC8            697      MOVE.W  GAS_MAX, D1
+000016F8  D041                     698      ADD.W   D1,D0
+000016FA  33C0 00001EE8            699      MOVE.W  D0,MAX_MAS_OFF
+00001700  3F00                     700      MOVE.W  D0,-(A7)
+00001702                           701  
+00001702  3039 00001EEA            702      MOVE.W  ANCHO_GAS, D0
+00001708  3F00                     703      MOVE.W  D0,-(A7)
+0000170A                           704  
+0000170A  3039 00001EC6            705      MOVE.W  GASOLINA, D0
+00001710  323C 0000                706      MOVE.W  #0,D1
+00001714  9240                     707      SUB.W   D0,D1
+00001716  3F01                     708      MOVE.W  D1,-(A7)
+00001718                           709      
+00001718  6100 0776                710      BSR RECTANGULO
+0000171C  508F                     711      ADD.L   #8,A7
+0000171E                           712      
+0000171E  6198                     713      BSR DIBUJAR_SIMBOLO_GAS
+00001720                           714      
+00001720                           715      ;AÑADIMOS BORDE DE LA GASOLINA
+00001720                           716      
+00001720  41F9 00001D7E            717      LEA BORDE_GASOLINA,A0
+00001726  3039 00001EEA            718      MOVE.W  ANCHO_GAS,D0
+0000172C  3239 00001EC8            719      MOVE.W  GAS_MAX,D1
+00001732                           720      
+00001732  3140 0006                721      MOVE.W  D0,6(A0)    ;METEMOS EL ANCHO EN EL LA X DEL P2
+00001736  3140 000A                722      MOVE.W  D0,10(A0)    ;POSICION X ES ANCHO P3
+0000173A  3141 000C                723      MOVE.W  D1,12(A0)   ;POSICION Y ES ALTO P3
+0000173E  3141 0010                724      MOVE.W  D1,16(A0)   ;SOLO ALTO P4
+00001742                           725      
+00001742  3039 00001EEC            726      MOVE.W  POS_X,D0
+00001748  3F00                     727      MOVE.W  D0,-(A7)
+0000174A                           728      
+0000174A  3039 00001EEE            729      MOVE.W  POS_Y,D0
+00001750  3F00                     730      MOVE.W  D0,-(A7)
+00001752                           731      
+00001752  2F3C 00001D7E            732      MOVE.L  #BORDE_GASOLINA,-(A7)
+00001758  6100 06FE                733      BSR DIBUJAR_FIGURA
+0000175C  508F                     734      ADD.L   #8,A7
+0000175E                           735      
+0000175E  4E75                     736      RTS
+00001760                           737  
+00001760                           738  GESTIONAR_DIBUJO_GASOLINA:
+00001760                           739  
+00001760                           740  
+00001760                           741      ;POSICION_ALEATORIA
+00001760  0C79 FFD8 00001ED6       742      CMP.W  #-40,Y_GASOLINA
+00001768  6600 0034                743      BNE    GESTION_GAS
+0000176C  3F3C 00AF                744      MOVE.W #175,-(A7)
+00001770  6100 0698                745      BSR    ALEATORIO
+00001774  548F                     746      ADDQ.L #2,A7
+00001776  0C79 0064 00001F08       747      CMP.W  #100,INTERVALO_CARRETERA
+0000177E  6700 0012                748      BEQ    OTRA_POSICION_GAS
+00001782  D279 00001EBC            749      ADD.W  POSICION_LINEA1,D1
+00001788  33C1 00001ED4            750      MOVE.W D1,X_GASOLINA
+0000178E  6000 000E                751      BRA    GESTION_GAS
+00001792                           752      
+00001792                           753  OTRA_POSICION_GAS:
+00001792                           754      
+00001792  D279 00001EC0            755      ADD.W  POSICION_PREVIA_LINEA1,D1
+00001798  33C1 00001ED4            756      MOVE.W D1,X_GASOLINA
+0000179E                           757      
+0000179E                           758  GESTION_GAS:
+0000179E                           759  
+0000179E  3039 00001F00            760      MOVE.W  VELOCIDAD,D0
+000017A4  D179 00001ED6            761      ADD.W   D0,Y_GASOLINA
+000017AA                           762      
+000017AA  3039 00001ED6            763      MOVE.W  Y_GASOLINA,D0
+000017B0  B07C 0280                764      CMP.W   #ALTURA_PANTALLA,D0
+000017B4  6D00 000E                765      BLT COMPROBAR_COLISION_GASOLINA
+000017B8                           766      
+000017B8  33FC FFD8 00001ED6       767      MOVE.W  #-40,Y_GASOLINA
+000017C0  6000 0066                768      BRA NO_COLISION
+000017C4                           769  
+000017C4                           770  COMPROBAR_COLISION_GASOLINA:
+000017C4                           771      ; 1. ¿Jugador a la derecha de la Gasolina? (X_JUG > X_GAS + ANCHO_GAS)
+000017C4  3039 00001ED4            772      MOVE.W  X_GASOLINA,D0
+000017CA  D079 00001ED8            773      ADD.W   ANCHO_GASOLINA,D0
+000017D0  B079 00001EE0            774      CMP.W   X_JUGADOR,D0
+000017D6  6D00 0050                775      BLT     NO_COLISION ; Si X_JUG es mayor, están separados
+000017DA                           776  
+000017DA                           777      ; 2. ¿Jugador a la izquierda de la Gasolina? (X_JUG + ANCHO_JUG < X_GAS)
+000017DA  3039 00001EE0            778      MOVE.W  X_JUGADOR,D0
+000017E0  D079 00001EDC            779      ADD.W   ANCHO_JUGADOR,D0
+000017E6  B079 00001ED4            780      CMP.W   X_GASOLINA,D0
+000017EC  6D00 003A                781      BLT     NO_COLISION ; Si X_GAS es mayor, están separados
+000017F0                           782  
+000017F0                           783      ; 3. ¿Jugador abajo de la Gasolina? (Y_JUG > Y_GAS + ALTO_GAS)
+000017F0  3039 00001ED6            784      MOVE.W  Y_GASOLINA,D0
+000017F6  D079 00001EDA            785      ADD.W   ALTO_GASOLINA,D0
+000017FC  B079 00001EE2            786      CMP.W   Y_JUGADOR,D0
+00001802  6D00 0024                787      BLT     NO_COLISION
+00001806                           788      
+00001806                           789      ; 4. ¿Jugador arriba de la Gasolina? (Y_JUG + ALTO_JUG < Y_GAS)
+00001806  3039 00001EE2            790      MOVE.W  Y_JUGADOR,D0
+0000180C  D079 00001EDE            791      ADD.W   ALTO_JUGADOR,D0
+00001812  B079 00001ED6            792      CMP.W   Y_GASOLINA,D0
+00001818  6D00 000E                793      BLT     NO_COLISION
+0000181C                           794  
+0000181C                           795      ; SI LLEGAMOS AQUÍ, ES QUE NINGUNA SEPARACIÓN SE CUMPLIO
+0000181C  6100 FE70                796      BSR     RECARGAR_GASOLINA
+00001820  33FC FF38 00001ED6       797      MOVE.W  #-200,Y_GASOLINA
+00001828                           798      
+00001828                           799  NO_COLISION:
+00001828  2F3C 0000FFFF            800      MOVE.L #$0000FFFF, -(A7)
+0000182E  6100 05C8                801      BSR PONER_COLOR
+00001832  588F                     802      ADD.L #4, A7
+00001834                           803  
+00001834  3F39 00001ED4            804      MOVE.W  X_GASOLINA, -(A7)
+0000183A  3F39 00001ED6            805      MOVE.W  Y_GASOLINA, -(A7)
+00001840  6100 FE76                806      BSR     DIBUJAR_SIMBOLO_GAS
+00001844  588F                     807      ADD.L   #4, A7
+00001846                           808  
+00001846  4E75                     809      RTS
+00001848                           810  
+00001848                           811  DIBUJAR_JUGADOR:
+00001848  2F3C 00FFFFFF            812      MOVE.L #$00FFFFFF, -(A7)
+0000184E  6100 05A8                813      BSR PONER_COLOR
+00001852  588F                     814      ADD.L #4, A7
+00001854                           815      
+00001854  41F9 00001D94            816      LEA RUEDA_ENEMIGO,A0
+0000185A  3039 00001EDC            817      MOVE.W  ANCHO_JUGADOR,D0
+00001860  5C40                     818      ADD.W   #6,D0
+00001862                           819      
+00001862  3140 0006                820      MOVE.W  D0,6(A0)
+00001866  3140 000A                821      MOVE.W  D0,10(A0)
+0000186A                           822      
+0000186A  3039 00001EE0            823      MOVE.W  X_JUGADOR,D0
+00001870  5740                     824      SUB.W   #3,D0
+00001872  3F00                     825      MOVE.W   D0,-(A7)    
+00001874                           826      
+00001874  3039 00001EE2            827      MOVE.W  Y_JUGADOR,D0  ;RUEDA DE ARRIBA
+0000187A  5A40                     828      ADD.W   #5,D0
+0000187C  3F00                     829      MOVE.W   D0,-(A7)
+0000187E                           830      
+0000187E  2F3C 00001D94            831      MOVE.L  #RUEDA_ENEMIGO,-(A7)
+00001884  6100 05D2                832      BSR DIBUJAR_FIGURA
+00001888  508F                     833      ADD.L   #8,A7
+0000188A                           834        
+0000188A  3039 00001EE0            835      MOVE.W  X_JUGADOR,D0
+00001890  5740                     836      SUB.W   #3,D0
+00001892  3F00                     837      MOVE.W   D0,-(A7)
+00001894                           838      
+00001894  3039 00001EE2            839      MOVE.W  Y_JUGADOR,D0    ;RUEDA DE ABAJO
+0000189A  D079 00001EDE            840      ADD.W   ALTO_JUGADOR,D0
+000018A0  0440 000A                841      SUB.W   #10,D0
+000018A4  3F00                     842      MOVE.W   D0,-(A7)
+000018A6                           843      
+000018A6  2F3C 00001D94            844      MOVE.L  #RUEDA_ENEMIGO,-(A7)
+000018AC  6100 05AA                845      BSR DIBUJAR_FIGURA
+000018B0  508F                     846      ADD.L   #8,A7
+000018B2                           847  
+000018B2  2F3C 00FF0000            848      MOVE.L #$00FF0000, -(A7)
+000018B8  6100 053E                849      BSR PONER_COLOR
+000018BC  588F                     850      ADD.L #4, A7
+000018BE                           851      
+000018BE  3039 00001EE0            852      MOVE.W   X_JUGADOR,D0
+000018C4  3F00                     853      MOVE.W   D0,-(A7)
+000018C6                           854      
+000018C6  3039 00001EE2            855      MOVE.W   Y_JUGADOR,D0
+000018CC  3F00                     856      MOVE.W   D0,-(A7)
+000018CE                           857      
+000018CE  3039 00001EDC            858      MOVE.W   ANCHO_JUGADOR,D0
+000018D4  3F00                     859      MOVE.W   D0,-(A7)
+000018D6                           860      
+000018D6  3039 00001EDE            861      MOVE.W   ALTO_JUGADOR,D0
+000018DC  3F00                     862      MOVE.W   D0,-(A7)
+000018DE                           863      
+000018DE  6100 05B0                864      BSR RECTANGULO
+000018E2  508F                     865      ADD.L   #8,A7
+000018E4                           866      
+000018E4  4E75                     867      RTS
+000018E6                           868  
+000018E6                           869  RESET_JUGADOR:
+000018E6  33FC 00F0 00001EE0       870      MOVE.W  #240,X_JUGADOR
+000018EE  4E75                     871      RTS
+000018F0                           872  
+000018F0                           873  RESET_ENEMIGO:
+000018F0  33FC FED4 00001EF6       874      MOVE.W  #-300,POS_Y_ENEMIGO
+000018F8  4E75                     875      RTS
+000018FA                           876  
+000018FA                           877  GESTIONAR_ENEMIGO:
+000018FA                           878  
+000018FA                           879      ;POSICION_ALEATORIA
+000018FA  0C79 FF38 00001EF6       880      CMP.W  #-200,POS_Y_ENEMIGO
+00001902  6600 0034                881      BNE    GESTION_ENEMIGO ;ME QUEDO SIN NOMBRES DE FUNCIONES :/
+00001906  3F3C 00AF                882      MOVE.W #175,-(A7)
+0000190A  6100 04FE                883      BSR    ALEATORIO
+0000190E  548F                     884      ADDQ.L #2,A7
+00001910  0C79 0064 00001F08       885      CMP.W  #100,INTERVALO_CARRETERA
+00001918  6700 0012                886      BEQ    OTRA_POSICION_ENEMIGO
+0000191C  D279 00001EBC            887      ADD.W  POSICION_LINEA1,D1
+00001922  33C1 00001EF4            888      MOVE.W D1,POS_X_ENEMIGO
+00001928  6000 000E                889      BRA    GESTION_ENEMIGO
+0000192C                           890      
+0000192C                           891  OTRA_POSICION_ENEMIGO:
+0000192C                           892      
+0000192C  D279 00001EC0            893      ADD.W  POSICION_PREVIA_LINEA1,D1
+00001932  33C1 00001EF4            894      MOVE.W D1,POS_X_ENEMIGO
+00001938                           895  
+00001938                           896  GESTION_ENEMIGO:
+00001938                           897      
+00001938  3039 00001F00            898      MOVE.W  VELOCIDAD,D0
+0000193E  D179 00001EF6            899      ADD.W   D0,POS_Y_ENEMIGO
+00001944                           900      
+00001944  3039 00001EF6            901      MOVE.W  POS_Y_ENEMIGO,D0
+0000194A  B07C 0280                902      CMP.W   #ALTURA_PANTALLA,D0
+0000194E  6D00 000E                903      BLT COMPROBAR_COLISION_ENEMIGO
+00001952                           904      
+00001952  33FC FF38 00001EF6       905      MOVE.W  #-200,POS_Y_ENEMIGO
+0000195A  6000 0062                906      BRA NO_COLISION_ENEMIGO
+0000195E                           907  
+0000195E                           908  COMPROBAR_COLISION_ENEMIGO:
+0000195E                           909      ; 1. ¿Jugador a la derecha de la Gasolina? (X_JUG > X_GAS + ANCHO_GAS)
+0000195E  3039 00001EF4            910      MOVE.W  POS_X_ENEMIGO,D0
+00001964  D079 00001EF8            911      ADD.W   ANCHO_ENEMIGO,D0
+0000196A  B079 00001EE0            912      CMP.W   X_JUGADOR,D0
+00001970  6D00 004C                913      BLT     NO_COLISION_ENEMIGO ; Si X_JUG es mayor, están separados
+00001974                           914  
+00001974                           915      ; 2. ¿Jugador a la izquierda de la Gasolina? (X_JUG + ANCHO_JUG < X_GAS)
+00001974  3039 00001EE0            916      MOVE.W  X_JUGADOR,D0
+0000197A  D079 00001EDC            917      ADD.W   ANCHO_JUGADOR,D0
+00001980  B079 00001EF4            918      CMP.W   POS_X_ENEMIGO,D0
+00001986  6D00 0036                919      BLT     NO_COLISION_ENEMIGO ; Si X_GAS es mayor, están separados
+0000198A                           920  
+0000198A                           921      ; 3. ¿Jugador abajo de la Gasolina? (Y_JUG > Y_GAS + ALTO_GAS)
+0000198A  3039 00001EF6            922      MOVE.W  POS_Y_ENEMIGO,D0
+00001990  D079 00001EFA            923      ADD.W   ALTO_ENEMIGO,D0
+00001996  B079 00001EE2            924      CMP.W   Y_JUGADOR,D0
+0000199C  6D00 0020                925      BLT     NO_COLISION_ENEMIGO
+000019A0                           926      
+000019A0                           927      ; 4. ¿Jugador arriba de la Gasolina? (Y_JUG + ALTO_JUG < Y_GAS)
+000019A0  3039 00001EE2            928      MOVE.W  Y_JUGADOR,D0
+000019A6  D079 00001EDE            929      ADD.W   ALTO_JUGADOR,D0
+000019AC  B079 00001EF6            930      CMP.W   POS_Y_ENEMIGO,D0
+000019B2  6D00 000A                931      BLT     NO_COLISION_ENEMIGO
+000019B6                           932  
+000019B6                           933      ; SI LLEGAMOS AQUÍ, ES QUE NINGUNA SEPARACIÓN SE CUMPLIO
+000019B6  33FC 0001 00001ECE       934      MOVE.W  #1,GAME_OVER
+000019BE                           935  
+000019BE                           936  NO_COLISION_ENEMIGO:
+000019BE  6100 0004                937      BSR DIBUJAR_ENEMIGO
+000019C2  4E75                     938      RTS
+000019C4                           939      
+000019C4                           940  DIBUJAR_ENEMIGO:
+000019C4  2F3C 00FFFFFF            941      MOVE.L #$00FFFFFF, -(A7)
+000019CA  6100 042C                942      BSR PONER_COLOR
+000019CE  588F                     943      ADD.L #4, A7
+000019D0                           944      
+000019D0                           945      
+000019D0                           946      
+000019D0  41F9 00001D94            947      LEA RUEDA_ENEMIGO,A0
+000019D6  3039 00001EF8            948      MOVE.W  ANCHO_ENEMIGO,D0
+000019DC  5C40                     949      ADD.W   #6,D0
+000019DE                           950      
+000019DE  3140 0006                951      MOVE.W  D0,6(A0)
+000019E2  3140 000A                952      MOVE.W  D0,10(A0)
+000019E6                           953      
+000019E6  3039 00001EF4            954      MOVE.W  POS_X_ENEMIGO,D0
+000019EC  5740                     955      SUB.W   #3,D0
+000019EE  3F00                     956      MOVE.W   D0,-(A7)    
+000019F0                           957      
+000019F0  3039 00001EF6            958      MOVE.W  POS_Y_ENEMIGO,D0  ;RUEDA DE ARRIBA
+000019F6  5A40                     959      ADD.W   #5,D0
+000019F8  3F00                     960      MOVE.W   D0,-(A7)
+000019FA                           961      
+000019FA  2F3C 00001D94            962      MOVE.L  #RUEDA_ENEMIGO,-(A7)
+00001A00  6100 0456                963      BSR DIBUJAR_FIGURA
+00001A04  508F                     964      ADD.L   #8,A7
+00001A06                           965        
+00001A06  3039 00001EF4            966      MOVE.W  POS_X_ENEMIGO,D0
+00001A0C  5740                     967      SUB.W   #3,D0
+00001A0E  3F00                     968      MOVE.W   D0,-(A7)
+00001A10                           969      
+00001A10  3039 00001EF6            970      MOVE.W  POS_Y_ENEMIGO,D0    ;RUEDA DE ABAJO
+00001A16  D079 00001EFA            971      ADD.W   ALTO_ENEMIGO,D0
+00001A1C  0440 000A                972      SUB.W   #10,D0
+00001A20  3F00                     973      MOVE.W   D0,-(A7)
+00001A22                           974      
+00001A22  2F3C 00001D94            975      MOVE.L  #RUEDA_ENEMIGO,-(A7)
+00001A28  6100 042E                976      BSR DIBUJAR_FIGURA
+00001A2C  508F                     977      ADD.L   #8,A7
+00001A2E                           978      
+00001A2E  2F3C 000000FF            979      MOVE.L #$000000FF, -(A7)
+00001A34  6100 03C2                980      BSR PONER_COLOR
+00001A38  588F                     981      ADD.L #4, A7
+00001A3A                           982      
+00001A3A  3039 00001EF4            983      MOVE.W  POS_X_ENEMIGO,D0
+00001A40  3F00                     984      MOVE.W   D0,-(A7)
+00001A42                           985      
+00001A42  3039 00001EF6            986      MOVE.W  POS_Y_ENEMIGO,D0
+00001A48  3F00                     987      MOVE.W   D0,-(A7)
+00001A4A                           988      
+00001A4A  3039 00001EF8            989      MOVE.W  ANCHO_ENEMIGO,D0
+00001A50  3F00                     990      MOVE.W   D0,-(A7)
+00001A52                           991      
+00001A52  3039 00001EFA            992      MOVE.W  ALTO_ENEMIGO,D0
+00001A58  3F00                     993      MOVE.W   D0,-(A7)
+00001A5A                           994      
+00001A5A  6100 0434                995      BSR RECTANGULO
+00001A5E  508F                     996      ADD.L   #8,A7
+00001A60                           997      
+00001A60  4E75                     998      RTS
+00001A62                           999  
+00001A62                          1000  ;Introducir en la pila las coordenadas para dibujar el arbol
+00001A62                          1001  ;Primero la (X) y luego la (Y), limpiar 4 bites
+00001A62                          1002  DIBUJAR_ARBOL:
+00001A62  4E56 0000               1003      LINK    A6,#0
+00001A66                          1004  
+00001A66  2F3C 0013458B           1005      MOVE.L  #$0013458B, -(A7) ;MARRON
+00001A6C  6100 038A               1006      BSR     PONER_COLOR
+00001A70  588F                    1007      ADD.L   #4, A7
+00001A72                          1008  
+00001A72  3F2E 000A               1009      MOVE.W  10(A6),-(A7)     
+00001A76  3F2E 0008               1010      MOVE.W  8(A6),-(A7)
+00001A7A  3F39 00001EFC           1011      MOVE.W  ANCHO_TRONCO,-(A7)          
+00001A80  3F39 00001EFE           1012      MOVE.W  ALTO_TRONCO,-(A7)           
+00001A86  6100 0408               1013      BSR     RECTANGULO
+00001A8A  508F                    1014      ADD.L   #8, A7
+00001A8C                          1015  
+00001A8C  2F3C 0000FF00           1016      MOVE.L  #$0000FF00, -(A7)   ;VERDE
+00001A92  6100 0364               1017      BSR     PONER_COLOR
+00001A96  588F                    1018      ADD.L   #4, A7
+00001A98                          1019  
+00001A98  302E 000A               1020      MOVE.W  10(A6),D0
+00001A9C  0440 0016               1021      SUB.W   #22, D0             ; Centrar respecto al tronco
+00001AA0  3F00                    1022      MOVE.W  D0, -(A7)           ; X
+00001AA2                          1023      
+00001AA2  302E 0008               1024      MOVE.W  8(A6),D0
+00001AA6  0440 003C               1025      SUB.W   #60, D0             ; Poner sobre el tronco
+00001AAA  3F00                    1026      MOVE.W  D0, -(A7)           ; Y
+00001AAC                          1027      
+00001AAC  2F3C 00001DAA           1028      MOVE.L  #TRIANGULO_GRANDE, -(A7)
+00001AB2  6100 03A4               1029      BSR     DIBUJAR_FIGURA
+00001AB6  508F                    1030      ADD.L   #8, A7
+00001AB8                          1031  
+00001AB8  4E5E                    1032      UNLK    A6
+00001ABA  4E75                    1033      RTS
+00001ABC                          1034  
+00001ABC                          1035  DIBUJAR_TIEMPO:
+00001ABC  4280                    1036      CLR.L   D0
+00001ABE  3039 00001ECC           1037      MOVE.W  SEGUNDOS,D0
+00001AC4  80FC 000A               1038      DIVU.W  #10,D0           ; D0 / 10 -> Cociente en parte alta, Resto en parte baja
+00001AC8                          1039      
+00001AC8  3400                    1040      MOVE.W  D0,D2            ; D2 - Decenas
+00001ACA  33C2 00001EE6           1041      MOVE.W  D2,DECENAS
+00001AD0  4840                    1042      SWAP    D0               
+00001AD2  3600                    1043      MOVE.W  D0,D3            ; D3 - Unidades
+00001AD4  33C3 00001EE4           1044      MOVE.W  D3,UNIDADES
+00001ADA                          1045      
+00001ADA                          1046      ; Dibujar Decenas
+00001ADA  3F3C 0064               1047      MOVE.W  #100,-(A7)       ; X
+00001ADE  3F3C 0032               1048      MOVE.W  #50,-(A7)        ; Y
+00001AE2  3F39 00001EE6           1049      MOVE.W  DECENAS,-(A7)         
+00001AE8  6100 001A               1050      BSR     DIBUJAR_NUMERO
+00001AEC  5C8F                    1051      ADD.L   #6,A7
+00001AEE                          1052      
+00001AEE                          1053      ; Dibujar Unidades
+00001AEE  3F3C 007D               1054      MOVE.W  #125,-(A7)       ; X (un poco más a la derecha)
+00001AF2  3F3C 0032               1055      MOVE.W  #50,-(A7)        ; Y
+00001AF6  3F39 00001EE4           1056      MOVE.W  UNIDADES,-(A7)            
+00001AFC  6100 0006               1057      BSR     DIBUJAR_NUMERO
+00001B00  5C8F                    1058      ADD.L   #6,A7
+00001B02  4E75                    1059      RTS
+00001B04                          1060  
+00001B04                          1061  DIBUJAR_NUMERO:
+00001B04  4E56 0000               1062      LINK    A6,#0
+00001B08  2F3C 0000FFFF           1063      MOVE.L  #$0000FFFF, -(A7)   ;AMARILLO
+00001B0E  6100 02E8               1064      BSR     PONER_COLOR
+00001B12  588F                    1065      ADD.L   #4, A7
+00001B14                          1066      
+00001B14  302E 0008               1067      MOVE.W  8(A6),D0        ; Obtener el dígito (0-9)
+00001B18                          1068      
+00001B18  B07C 0000               1069      CMP.W   #0,D0
+00001B1C  6700 004E               1070      BEQ     CALL_D0
+00001B20  B07C 0001               1071      CMP.W   #1,D0
+00001B24  6700 004E               1072      BEQ     CALL_D1
+00001B28  B07C 0002               1073      CMP.W   #2,D0
+00001B2C  6700 004E               1074      BEQ     CALL_D2
+00001B30  B07C 0003               1075      CMP.W   #3,D0
+00001B34  6700 004E               1076      BEQ     CALL_D3
+00001B38  B07C 0004               1077      CMP.W   #4,D0
+00001B3C  6700 004E               1078      BEQ     CALL_D4
+00001B40  B07C 0005               1079      CMP.W   #5,D0
+00001B44  6700 004E               1080      BEQ     CALL_D5
+00001B48  B07C 0006               1081      CMP.W   #6,D0
+00001B4C  6700 004E               1082      BEQ     CALL_D6
+00001B50  B07C 0007               1083      CMP.W   #7,D0
+00001B54  6700 004E               1084      BEQ     CALL_D7
+00001B58  B07C 0008               1085      CMP.W   #8,D0
+00001B5C  6700 004E               1086      BEQ     CALL_D8
+00001B60  B07C 0009               1087      CMP.W   #9,D0
+00001B64  6700 004E               1088      BEQ     CALL_D9
+00001B68  6000 004E               1089      BRA     FIN_DIB_NUM
+00001B6C                          1090  
+00001B6C  6100 004E               1091  CALL_D0: BSR DIBUJAR_0
+00001B70  6000 0046               1092      BRA FIN_DIB_NUM
+00001B74  6100 0060               1093  CALL_D1: BSR DIBUJAR_1
+00001B78  6000 003E               1094      BRA FIN_DIB_NUM
+00001B7C  6100 0062               1095  CALL_D2: BSR DIBUJAR_2
+00001B80  6000 0036               1096      BRA FIN_DIB_NUM
+00001B84  6100 0070               1097  CALL_D3: BSR DIBUJAR_3
+00001B88  6000 002E               1098      BRA FIN_DIB_NUM
+00001B8C  6100 007E               1099  CALL_D4: BSR DIBUJAR_4
+00001B90  6000 0026               1100      BRA FIN_DIB_NUM
+00001B94  6100 0088               1101  CALL_D5: BSR DIBUJAR_5
+00001B98  6000 001E               1102      BRA FIN_DIB_NUM
+00001B9C  6100 0096               1103  CALL_D6: BSR DIBUJAR_6
+00001BA0  6000 0016               1104      BRA FIN_DIB_NUM
+00001BA4  6100 00A8               1105  CALL_D7: BSR DIBUJAR_7
+00001BA8  6000 000E               1106      BRA FIN_DIB_NUM
+00001BAC  6100 00AE               1107  CALL_D8: BSR DIBUJAR_8
+00001BB0  6000 0006               1108      BRA FIN_DIB_NUM
+00001BB4  6100 00C4               1109  CALL_D9: BSR DIBUJAR_9
+00001BB8                          1110  
+00001BB8                          1111  FIN_DIB_NUM:
+00001BB8  4E5E                    1112      UNLK    A6
+00001BBA  4E75                    1113      RTS
+00001BBC                          1114  
+00001BBC                          1115  DIBUJAR_0:
+00001BBC  6100 00D6               1116      BSR SEG_SUP
+00001BC0  6100 0108               1117      BSR SEG_INF
+00001BC4  6100 0122               1118      BSR SEG_V_SI
+00001BC8  6100 0136               1119      BSR SEG_V_SD
+00001BCC  6100 0150               1120      BSR SEG_V_II
+00001BD0  6100 016A               1121      BSR SEG_V_ID
+00001BD4  4E75                    1122      RTS
+00001BD6                          1123  
+00001BD6                          1124  DIBUJAR_1:
+00001BD6  6100 0128               1125      BSR SEG_V_SD
+00001BDA  6100 0160               1126      BSR SEG_V_ID
+00001BDE  4E75                    1127      RTS
+00001BE0                          1128  
+00001BE0                          1129  DIBUJAR_2:
+00001BE0  6100 00B2               1130      BSR SEG_SUP
+00001BE4  6100 011A               1131      BSR SEG_V_SD
+00001BE8  6100 00C2               1132      BSR SEG_CEN
+00001BEC  6100 0130               1133      BSR SEG_V_II
+00001BF0  6100 00D8               1134      BSR SEG_INF
+00001BF4  4E75                    1135      RTS
+00001BF6                          1136  
+00001BF6                          1137  DIBUJAR_3:
+00001BF6  6100 009C               1138      BSR SEG_SUP
+00001BFA  6100 0104               1139      BSR SEG_V_SD
+00001BFE  6100 00AC               1140      BSR SEG_CEN
+00001C02  6100 0138               1141      BSR SEG_V_ID
+00001C06  6100 00C2               1142      BSR SEG_INF
+00001C0A  4E75                    1143      RTS
+00001C0C                          1144  
+00001C0C                          1145  DIBUJAR_4:
+00001C0C  6100 00DA               1146      BSR SEG_V_SI
+00001C10  6100 009A               1147      BSR SEG_CEN
+00001C14  6100 00EA               1148      BSR SEG_V_SD
+00001C18  6100 0122               1149      BSR SEG_V_ID
+00001C1C  4E75                    1150      RTS
+00001C1E                          1151  
+00001C1E                          1152  DIBUJAR_5:
+00001C1E  6100 0074               1153      BSR SEG_SUP
+00001C22  6100 00C4               1154      BSR SEG_V_SI
+00001C26  6100 0084               1155      BSR SEG_CEN
+00001C2A  6100 0110               1156      BSR SEG_V_ID
+00001C2E  6100 009A               1157      BSR SEG_INF
+00001C32  4E75                    1158      RTS
+00001C34                          1159  
+00001C34                          1160  DIBUJAR_6:
+00001C34  6100 005E               1161      BSR SEG_SUP
+00001C38  6100 00AE               1162      BSR SEG_V_SI
+00001C3C  6100 00E0               1163      BSR SEG_V_II
+00001C40  6100 006A               1164      BSR SEG_CEN
+00001C44  6100 00F6               1165      BSR SEG_V_ID
+00001C48  6100 0080               1166      BSR SEG_INF
+00001C4C  4E75                    1167      RTS
+00001C4E                          1168  
+00001C4E                          1169  DIBUJAR_7:
+00001C4E  6100 0044               1170      BSR SEG_SUP
+00001C52  6100 00AC               1171      BSR SEG_V_SD
+00001C56  6100 00E4               1172      BSR SEG_V_ID
+00001C5A  4E75                    1173      RTS
+00001C5C                          1174  
+00001C5C                          1175  DIBUJAR_8:
+00001C5C  6100 0036               1176      BSR SEG_SUP
+00001C60  6100 004A               1177      BSR SEG_CEN
+00001C64  6100 0064               1178      BSR SEG_INF
+00001C68  6100 007E               1179      BSR SEG_V_SI
+00001C6C  6100 0092               1180      BSR SEG_V_SD
+00001C70  6100 00AC               1181      BSR SEG_V_II
+00001C74  6100 00C6               1182      BSR SEG_V_ID
+00001C78  4E75                    1183      RTS
+00001C7A                          1184  
+00001C7A                          1185  DIBUJAR_9:
+00001C7A  6100 0018               1186      BSR SEG_SUP
+00001C7E  6100 0068               1187      BSR SEG_V_SI
+00001C82  6100 007C               1188      BSR SEG_V_SD
+00001C86  6100 0024               1189      BSR SEG_CEN
+00001C8A  6100 00B0               1190      BSR SEG_V_ID
+00001C8E  6100 003A               1191      BSR SEG_INF
+00001C92  4E75                    1192      RTS
+00001C94                          1193  
+00001C94                          1194  ; SUB-FUNCIONES DE SEGMENTOS
+00001C94                          1195  SEG_SUP: ; Horizontal Superior
+00001C94  3F2E 000C               1196              MOVE.W 12(A6),-(A7)  ; X
+00001C98  3F2E 000A               1197              MOVE.W 10(A6),-(A7)  ; Y
+00001C9C  3F3C 0014               1198              MOVE.W #20,-(A7)     ; ANCHO
+00001CA0  3F3C 0002               1199              MOVE.W #2,-(A7)      ; ALTO
+00001CA4  6100 01EA               1200              BSR RECTANGULO
+00001CA8  508F                    1201              ADD.L #8,A7
+00001CAA  4E75                    1202              RTS
+00001CAC                          1203  
+00001CAC                          1204  SEG_CEN: ; Horizontal Central
+00001CAC  3F2E 000C               1205              MOVE.W 12(A6),-(A7)  ; X
+00001CB0  302E 000A               1206              MOVE.W 10(A6),D0
+00001CB4  0640 0014               1207              ADD.W #20,D0
+00001CB8  3F00                    1208              MOVE.W D0,-(A7)      ; Y+20
+00001CBA  3F3C 0014               1209              MOVE.W #20,-(A7)     ; ANCHO
+00001CBE  3F3C 0002               1210              MOVE.W #2,-(A7)      ; ALTO
+00001CC2  6100 01CC               1211              BSR RECTANGULO
+00001CC6  508F                    1212              ADD.L #8,A7
+00001CC8  4E75                    1213              RTS
+00001CCA                          1214  
+00001CCA                          1215  SEG_INF: ; Horizontal Inferior
+00001CCA  3F2E 000C               1216              MOVE.W 12(A6),-(A7)  ; X
+00001CCE  302E 000A               1217              MOVE.W 10(A6),D0
+00001CD2  0640 0028               1218              ADD.W #40,D0
+00001CD6  3F00                    1219              MOVE.W D0,-(A7)      ; Y+40
+00001CD8  3F3C 0014               1220              MOVE.W #20,-(A7)     ; ANCHO
+00001CDC  3F3C 0002               1221              MOVE.W #2,-(A7)      ; ALTO
+00001CE0  6100 01AE               1222              BSR RECTANGULO
+00001CE4  508F                    1223              ADD.L #8,A7
+00001CE6  4E75                    1224              RTS
+00001CE8                          1225  
+00001CE8                          1226  SEG_V_SI: ; Vertical Superior Izquierda
+00001CE8  3F2E 000C               1227              MOVE.W 12(A6),-(A7)  ; X
+00001CEC  3F2E 000A               1228              MOVE.W 10(A6),-(A7)  ; Y
+00001CF0  3F3C 0002               1229              MOVE.W #2,-(A7)      ; ANCHO
+00001CF4  3F3C 0014               1230              MOVE.W #20,-(A7)     ; ALTO
+00001CF8  6100 0196               1231              BSR RECTANGULO
+00001CFC  508F                    1232              ADD.L #8,A7
+00001CFE  4E75                    1233              RTS
+00001D00                          1234  
+00001D00                          1235  SEG_V_SD: ; Vertical Superior Derecha
+00001D00  302E 000C               1236              MOVE.W 12(A6),D0
+00001D04  0640 0012               1237              ADD.W #18,D0
+00001D08  3F00                    1238              MOVE.W D0,-(A7)      ; X+18
+00001D0A  3F2E 000A               1239              MOVE.W 10(A6),-(A7)  ; Y
+00001D0E  3F3C 0002               1240              MOVE.W #2,-(A7)      ; ANCHO
+00001D12  3F3C 0014               1241              MOVE.W #20,-(A7)     ; ALTO
+00001D16  6100 0178               1242              BSR RECTANGULO
+00001D1A  508F                    1243              ADD.L #8,A7
+00001D1C  4E75                    1244              RTS
+00001D1E                          1245  
+00001D1E                          1246  SEG_V_II: ; Vertical Inferior Izquierda
+00001D1E  3F2E 000C               1247              MOVE.W 12(A6),-(A7)  ; X
+00001D22  302E 000A               1248              MOVE.W 10(A6),D0
+00001D26  0640 0014               1249              ADD.W #20,D0
+00001D2A  3F00                    1250              MOVE.W D0,-(A7)      ; Y+20
+00001D2C  3F3C 0002               1251              MOVE.W #2,-(A7)      ; ANCHO
+00001D30  3F3C 0014               1252              MOVE.W #20,-(A7)     ; ALTO
+00001D34  6100 015A               1253              BSR RECTANGULO
+00001D38  508F                    1254              ADD.L #8,A7
+00001D3A  4E75                    1255              RTS
+00001D3C                          1256  
+00001D3C                          1257  SEG_V_ID: ; Vertical Inferior Derecha
+00001D3C  322E 000C               1258              MOVE.W 12(A6),D1
+00001D40  0641 0012               1259              ADD.W #18,D1
+00001D44  3F01                    1260              MOVE.W D1,-(A7)      ; X+18
+00001D46  302E 000A               1261              MOVE.W 10(A6),D0
+00001D4A  0640 0014               1262              ADD.W #20,D0
+00001D4E  3F00                    1263              MOVE.W D0,-(A7)      ; Y+20
+00001D50  3F3C 0002               1264              MOVE.W #2,-(A7)      ; ANCHO
+00001D54  3F3C 0014               1265              MOVE.W #20,-(A7)     ; ALTO
+00001D58  6100 0136               1266              BSR RECTANGULO
+00001D5C  508F                    1267              ADD.L #8,A7
+00001D5E  4E75                    1268              RTS
+00001D60                          1269  
+00001D60                          1270  ;termina codigo felipe
+00001D60                          1271  
+00001D60                          1272   
+00001D60                          1273      
+00001D60  FFFF FFFF               1274      SIMHALT             ; halt simulator
+00001D64                          1275      
+00001D64                          1276  FIGURA_GASOLINA:
+00001D64= 0006                    1277      DC.W    6
+00001D66= 000A 0005               1278      DC.W    10,5
+00001D6A= 000A 0014               1279      DC.W    10,20
+00001D6E= 0019 0014               1280      DC.W    25,20
+00001D72= 0019 0000               1281      DC.W    25,0
+00001D76= 000F 0000               1282      DC.W    15,0
+00001D7A= 000A 0005               1283      DC.W    10,5
+00001D7E                          1284  
+00001D7E                          1285  BORDE_GASOLINA:
+00001D7E= 0005                    1286      DC.W    5
+00001D80= 0000 0000               1287      DC.W    0,0
+00001D84= 0000 0000               1288      DC.W    0,0 ;ANCHO SOLO
+00001D88= 0000 0000               1289      DC.W    0,0 ;ANCHO Y ALTO
+00001D8C= 0000 0000               1290      DC.W    0,0 ;ALTO SOLO
+00001D90= 0000 0000               1291      DC.W    0,0
+00001D94                          1292  
+00001D94                          1293  RUEDA_ENEMIGO:
+00001D94= 0005                    1294      DC.W    5
+00001D96= 0000 0000               1295      DC.W    0,0
+00001D9A= 001A 0000               1296      DC.W    26,0    ;P2 = ANCHO + 6, 0
+00001D9E= 001A 0005               1297      DC.W    26,5    ;P3 = ANCHO + 6, 5
+00001DA2= 0000 0005               1298      DC.W    0,5
+00001DA6= 0000 0000               1299      DC.W    0,0
+00001DAA                          1300      
+00001DAA                          1301  TRIANGULO_GRANDE:  
+00001DAA= 0004                    1302      DC.W    4
+00001DAC= 001E 0000               1303      DC.W    30,0
+00001DB0= 0000 003C               1304      DC.W    0,60
+00001DB4= 003C 003C               1305      DC.W    60,60
+00001DB8= 001E 0000               1306      DC.W    30,0  
+00001DBC                          1307  
+00001DBC                          1308      INCLUDE GROUTINES_FINAL.X68
+00001DBC                          1309  ;FUNCION QUE ESPERA 1 CENTESIMA DE SEGUNDO
+00001DBC                          1310  WAIT_CENT:
+00001DBC  7008                    1311      MOVE.L  #8,D0  ;PONEMOS LA FUNCION 8 QUE ES LA DEL TIEMPO
+00001DBE  4E4F                    1312      TRAP    #15    ;EJECUTAMOS LA TRAP 15
+00001DC0  2A01                    1313      MOVE.L  D1,D5  ;COPIAMOS EL REGISTRO A D5
+00001DC2                          1314  TIMER:
+00001DC2  4E4F                    1315      TRAP    #15    ;EJECUTAMOS LA TRAP 15 PARA OBTENER EL TIEMPO DE NUEVO
+00001DC4  BA41                    1316      CMP     D1,D5  ;COMPARAMOS LAS CENTESIMAS DE D1 CON D5
+00001DC6  67FA                    1317      BEQ     TIMER  ;SI SON IGUALES, ES QUE NO HA PASADO 1 CENTESIMA DE SEGUNDO
+00001DC8  4E75                    1318      RTS            ;RETORNO
+00001DCA                          1319      
+00001DCA                          1320  LIMPIAR_PANTALLA:
+00001DCA  700B                    1321      MOVE.L #11,D0     ;FUNCION DE LIMPIAR PANTALLA
+00001DCC  223C 0000FF00           1322      MOVE.L #$FF00,D1  ;FUNCION DE LIMPIAR PANTALLA
+00001DD2  4E4F                    1323      TRAP   #15        ;LIMPIAR PANTALLA
+00001DD4  4E75                    1324      RTS
+00001DD6                          1325      
+00001DD6                          1326      
+00001DD6                          1327  MOSTRAR_PANTALLA:
+00001DD6  705E                    1328      MOVE.L #94,D0  ;COPIAR EL BUFFER A LA PANTALLA PRINCIPAL
+00001DD8  4E4F                    1329      TRAP   #15
+00001DDA  4E75                    1330      RTS
+00001DDC                          1331     
+00001DDC                          1332  ;Lee de la pila el color. Un longword ".L" $00bbggrr  
+00001DDC                          1333  MODO_GRAFICO:
+00001DDC  7211                    1334      MOVE.L  #17,D1    ;ACTIVAR EL DOBLE BUFFER
+00001DDE  705C                    1335      MOVE.L  #92,D0    ;MODO DIBUJO
+00001DE0  4E4F                    1336      TRAP    #15 
+00001DE2  4E75                    1337      RTS
+00001DE4                          1338      
+00001DE4                          1339  ;Lee de la pila el color. Un longword ".L" $00bbggrr 
+00001DE4                          1340  COLOR_BORDE:
+00001DE4  222F 0004               1341      MOVE.L  4(A7),D1 ;COLOR VERDE
+00001DE8  7050                    1342      MOVE.L  #80,D0      
+00001DEA  4E4F                    1343      TRAP    #15
+00001DEC  4E75                    1344      RTS
+00001DEE                          1345  
+00001DEE                          1346  ;Lee de la pila el color. Un longword ".L" $00bbggrr 
+00001DEE                          1347  COLOR_RELLENO:
+00001DEE  222F 0004               1348      MOVE.L  4(A7),D1 ;COLOR VERDE RELLENO
+00001DF2  7051                    1349      MOVE.L  #81,D0      
+00001DF4  4E4F                    1350      TRAP    #15
+00001DF6  4E75                    1351      RTS
+00001DF8                          1352  
+00001DF8                          1353  ;Pone el color que se quiera para dibujar
+00001DF8                          1354  ;Lee de la pila el color. Un longword ".L" $00bbggrr 
+00001DF8                          1355  PONER_COLOR:
+00001DF8  222F 0004               1356      MOVE.L  4(A7),D1 ;COLOR 
+00001DFC  7050                    1357      MOVE.L  #80,D0      
+00001DFE  4E4F                    1358      TRAP    #15
+00001E00                          1359  
+00001E00  222F 0004               1360      MOVE.L  4(A7),D1 ;COLOR RELLENO
+00001E04  7051                    1361      MOVE.L  #81,D0      
+00001E06  4E4F                    1362      TRAP    #15
+00001E08  4E75                    1363      RTS
+00001E0A                          1364      
+00001E0A                          1365  ;Genera un numero aleatorio entre 0 y el numero en la pila
+00001E0A                          1366  ;El numero generado queda en d1
+00001E0A                          1367  ;Lee de la pila un número word ".W"
+00001E0A                          1368  
+00001E0A                          1369  ALEATORIO:
+00001E0A  0679 4E2B 00001E4E      1370      ADD.W   #20011,RVAL
+00001E12  2039 00001E50           1371      MOVE.L    AVAL,D0
+00001E18  E398                    1372      ROL.L       #1,D0
+00001E1A  23C0 00001E50           1373      MOVE.L      D0,AVAL
+00001E20  2239 00001E54           1374      MOVE.L    BVAL,D1
+00001E26  E699                    1375      ROR.L       #3,D1
+00001E28  23C1 00001E54           1376      MOVE.L      D1,BVAL
+00001E2E  B141                    1377      EOR.W       D0,D1
+00001E30  3039 00001E4E           1378      MOVE.W    RVAL,D0
+00001E36  B141                    1379      EOR.W       D0,D1
+00001E38  C2BC 0000FFFF           1380      AND.L   #$FFFF,D1
+00001E3E  302F 0004               1381      MOVE.W   4(A7),D0
+00001E42  82C0                    1382      DIVU.W      D0,D1
+00001E44  4841                    1383      SWAP           D1
+00001E46  C2BC 0000FFFF           1384      AND.L   #$FFFF,D1
+00001E4C  4E75                    1385      RTS
+00001E4E                          1386  
+00001E4E= 0000                    1387  RVAL:    DC.W 0
+00001E50= 16038ACE                1388  AVAL:    DC.L $16038ACE
+00001E54= 5274BDF0                1389  BVAL:    DC.L $5274BDF0
+00001E58                          1390  
+00001E58                          1391  ;DIBUJA LA FIGURA 
+00001E58                          1392  ;INTRODUCIR EN LA PILA LA DIRECCIÓN DE LA FIGURA
+00001E58                          1393  ;INTRODUCIR POSICION X DE LA FIGURA EN PANTALLA UN WORD .W
+00001E58                          1394  ;INTRODUCIR POSICION Y DE LA FIGURA EN PANTALLA UN WORD .W
+00001E58                          1395  DIBUJAR_FIGURA:
+00001E58  206F 0004               1396      MOVE.L 4(A7),A0
+00001E5C  3E18                    1397      MOVE.W (A0)+,D7   ;LEEMOS CUANTAS LINEAS TIENE LA FIGURA
+00001E5E  5547                    1398      SUB.W  #2,D7
+00001E60  4281                    1399      CLR.L D1
+00001E62  4282                    1400      CLR.L D2
+00001E64  4283                    1401      CLR.L D3
+00001E66  4284                    1402      CLR.L D4
+00001E68  303C 0054               1403      MOVE.W #84,D0
+00001E6C                          1404      
+00001E6C  3218                    1405      MOVE.W (A0)+,D1
+00001E6E  3418                    1406      MOVE.W (A0)+,D2
+00001E70                          1407      
+00001E70  D26F 000A               1408      ADD.W  10(A7),D1
+00001E74  D46F 0008               1409      ADD.W  8(A7),D2
+00001E78                          1410      
+00001E78                          1411  FIG_LP:
+00001E78                          1412  
+00001E78  3618                    1413      MOVE.W (A0)+,D3
+00001E7A  3818                    1414      MOVE.W (A0)+,D4
+00001E7C  D66F 000A               1415      ADD.W  10(A7),D3
+00001E80  D86F 0008               1416      ADD.W  8(A7),D4
+00001E84                          1417      
+00001E84  4E4F                    1418      TRAP #15
+00001E86                          1419  
+00001E86  3203                    1420      MOVE.W D3,D1
+00001E88  3404                    1421      MOVE.W D4,D2
+00001E8A                          1422  
+00001E8A  51CF FFEC               1423      DBRA.W D7,FIG_LP
+00001E8E                          1424  
+00001E8E  4E75                    1425      RTS
+00001E90                          1426  
+00001E90                          1427  ;HAY QUE INTRODUCIR EN LA PILA
+00001E90                          1428  ;WORD ".W" X
+00001E90                          1429  ;WORD ".W" Y
+00001E90                          1430  ;WORD ".W" ANCHO
+00001E90                          1431  ;WORD ".W" ALTO
+00001E90                          1432  RECTANGULO:
+00001E90  4281                    1433      CLR.L D1
+00001E92  4282                    1434      CLR.L D2
+00001E94                          1435  
+00001E94  322F 000A               1436      MOVE.W 10(A7),D1
+00001E98  342F 0008               1437      MOVE.W 8(A7),D2
+00001E9C  2601                    1438      MOVE.L   D1,D3
+00001E9E  2802                    1439      MOVE.L   D2,D4
+00001EA0  D66F 0006               1440      ADD.W  6(A7),D3
+00001EA4  D86F 0004               1441      ADD.W  4(A7),D4
+00001EA8                          1442  
+00001EA8  7057                    1443      MOVE.L #87,D0
+00001EAA  4E4F                    1444      TRAP #15
+00001EAC                          1445  
+00001EAC  4E75                    1446      RTS
+00001EAE                          1447  
+00001EAE                          1448  ;COMPRUEBA SI UNA TECLA ESTÁ PULSADA
+00001EAE                          1449  ;INTRODUCIR EL CODIGO DE LA TECLA EN LA PILA ".W"
+00001EAE                          1450  ;PONE UN 0 EN D1 SI LA TECLA NO ESTÁ PULSADA
+00001EAE                          1451  ;SI ESTÁ PULSADA EN D1 HABRÁ UN VALOR DISTINTO DE 0
+00001EAE                          1452  CHECK_TECLA:
+00001EAE  4281                    1453      CLR.L   D1
+00001EB0  322F 0004               1454      MOVE.W  4(A7),D1  ;CODIGO DE TECLA TECLA EN D1
+00001EB4  7013                    1455      MOVE.L  #19,D0    ;
+00001EB6  4E4F                    1456      TRAP    #15       ;EJECUTAMOS LA FUNCION DE COMPROBAR SI LA TECLA ESTA PULSADA
+00001EB8  4E75                    1457      RTS
+00001EBA                          1458  
+00001EBA                          1459  
+00001EBA                          1460  
+00001EBA                          1461  -------------------- end include --------------------
+00001EBA                          1462      
+00001EBA                          1463  * Put variables and constants here
+00001EBA= 0000                    1464  CONTADOR_CICLOS: DC.W 0
+00001EBC= 00C8                    1465  POSICION_LINEA1: DC.W 200
+00001EBE= 0190                    1466  POSICION_LINEA2: DC.W 400
+00001EC0= 00C8                    1467  POSICION_PREVIA_LINEA1: DC.W 200
+00001EC2= 0190                    1468  POSICION_PREVIA_LINEA2: DC.W 400
+00001EC4= 0000                    1469  POSICION_INICIAL_LINEAS_BLANCAS DC.W 0
+00001EC6                          1470  
+00001EC6                          1471  
+00001EC6= 0064                    1472  GASOLINA    DC.W 100
+00001EC8= 0064                    1473  GAS_MAX     DC.W 100
+00001ECA= 0014                    1474  CANTIDAD_RECARGA_GAS DC.W 20
+00001ECC= 0000                    1475  SEGUNDOS    DC.W 0
+00001ECE= 00                      1476  GAME_OVER   DC.B 0
+00001ED0= 0000                    1477  CENT_COUNT  DC.W 0
+00001ED2= 0000                    1478  CENT_GAS_COUNT  DC.W 0
+00001ED4                          1479  
+00001ED4= 00FA                    1480  X_GASOLINA  DC.W    250
+00001ED6= 0000                    1481  Y_GASOLINA  DC.W    0
+00001ED8= 000F                    1482  ANCHO_GASOLINA  DC.W    15
+00001EDA= 000F                    1483  ALTO_GASOLINA   DC.W    15
+00001EDC                          1484  
+00001EDC= 001E                    1485  ANCHO_JUGADOR: DC.W 30
+00001EDE= 0028                    1486  ALTO_JUGADOR: DC.W 40
+00001EE0= 00F0                    1487  X_JUGADOR: DC.W 240
+00001EE2= 0154                    1488  Y_JUGADOR: DC.W 340
+00001EE4                          1489  
+00001EE4= 0000                    1490  UNIDADES    DC.W    0
+00001EE6= 0000                    1491  DECENAS     DC.W    0
+00001EE8                          1492  
+00001EE8= 0000                    1493  MAX_MAS_OFF DC.W 0
+00001EEA= 0014                    1494  ANCHO_GAS   DC.W 20
+00001EEC= 000D                    1495  POS_X       DC.W 13
+00001EEE= 003C                    1496  POS_Y       DC.W 60
+00001EF0                          1497  
+00001EF0= 0005                    1498  POS_X_SIMBOLO_GAS DC.W  5
+00001EF2= 001E                    1499  POS_Y_SIMBOLO_GAS DC.W  30
+00001EF4                          1500  
+00001EF4= 0032                    1501  POS_X_ENEMIGO   DC.W    50
+00001EF6= 0014                    1502  POS_Y_ENEMIGO   DC.W    20
+00001EF8= 001E                    1503  ANCHO_ENEMIGO   DC.W    30
+00001EFA= 0028                    1504  ALTO_ENEMIGO    DC.W    40 
+00001EFC                          1505  
+00001EFC= 0010                    1506  ANCHO_TRONCO    DC.W    16
+00001EFE= 0019                    1507  ALTO_TRONCO     DC.W    25
+00001F00                          1508  
+00001F00                          1509  
+00001F00= 0002                    1510  VELOCIDAD DC.W 2
+00001F02= 0000                    1511  MOVIMIENTO_LINEA  DC.W 0
+00001F04= 0000                    1512  MOVIMIENTO_CARRETERA DC.W 0
+00001F06= 0000                    1513  MOVIMIENTO_ARBOLES   DC.W 0
+00001F08= 0000                    1514  INTERVALO_CARRETERA DC.W 0
+00001F0A= 0000                    1515  INDICADOR_CARRETERA DC.W 0
+00001F0C= 0005                    1516  ARBOLES_POR_DIBUJAR DC.W 5
+00001F0E                          1517      END    START        ; last line of source
 
 No errors detected
 No warnings generated
@@ -1327,158 +1527,174 @@ No warnings generated
 SYMBOL TABLE INFORMATION
 Symbol-name         Value
 -------------------------
-ALEATORIO           1BB8
-ALTO_CUADRADO       1C6A
-ALTO_ENEMIGO        1CA0
-ALTO_TRONCO         1CA4
+ALEATORIO           1E0A
+ALTO_ENEMIGO        1EFA
+ALTO_GASOLINA       1EDA
+ALTO_JUGADOR        1EDE
+ALTO_TRONCO         1EFE
 ALTURA_PANTALLA     280
-ANCHO_CUADRADO      1C68
-ANCHO_ENEMIGO       1C9E
-ANCHO_GAS           1C90
-ANCHO_TRONCO        1CA2
+ANCHO_ENEMIGO       1EF8
+ANCHO_GAS           1EEA
+ANCHO_GASOLINA      1ED8
+ANCHO_JUGADOR       1EDC
+ANCHO_TRONCO        1EFC
 ANCHURA_PANTALLA    1E0
-ARBOLES_POR_DIBUJAR  1CB2
-ARRAY               1542
-AVAL                1BFE
-AVANZAR_CARRETERA   134E
-BORDE_GASOLINA      1B2C
-BUCLE_INICIALIZAR_ARBOLES  14F0
-BUCLE_JUEGO         1010
-BUCLE_MOSTRAR_ARBOLES  155E
-BVAL                1C02
-CAIDA               12FC
-CALL_D0             191A
-CALL_D1             1922
-CALL_D2             192A
-CALL_D3             1932
-CALL_D4             193A
-CALL_D5             1942
-CALL_D6             194A
-CALL_D7             1952
-CALL_D8             195A
-CALL_D9             1962
-CAMBIO_CARRETERA    1404
-CANTIDAD_RECARGA_GAS  1C80
-CARRETERA_INCLINADA1  15CC
-CARRETERA_INCLINADA2  15D6
-CARRETERA_INCLINADA3  15E0
-CARRETERA_INCLINADA4  15EA
-CARRETERA_INVERTIDA  15FE
-CARRETERA_NORM      15F4
-CENT_COUNT          1C86
-CENT_GAS_COUNT      1C88
-CHECK_TECLA         1C5C
-COLOR_BORDE         1B92
-COLOR_RELLENO       1B9C
-CONTADOR_CICLOS     1C70
-DECENAS             1C8C
-DERECHA             13F4
-DIBUJAR_0           196A
-DIBUJAR_1           1984
-DIBUJAR_2           198E
-DIBUJAR_3           19A4
-DIBUJAR_4           19BA
-DIBUJAR_5           19CC
-DIBUJAR_6           19E2
-DIBUJAR_7           19FC
-DIBUJAR_8           1A0A
-DIBUJAR_9           1A28
-DIBUJAR_ARBOL       1810
-DIBUJAR_CARRETERA   10D0
-DIBUJAR_COCHE       13A4
-DIBUJAR_ENEMIGO     1772
-DIBUJAR_FIGURA      1C06
-DIBUJAR_GASOLINA    16EA
-DIBUJAR_NUMERO      18B2
-DIBUJAR_SIMBOLO_GAS  16CA
-DIBUJAR_TIEMPO      186A
-FIGURA_GASOLINA     1B12
-FIG_LP              1C26
-FIN_DIB_NUM         1966
-FIN_JUEGO           106C
-GAME_OVER           1C84
-GASOLINA            1C7C
-GAS_MAX             1C7E
-INCREMENTO_VELOCIDAD  139C
-INDICADOR_CARRETERA  1CB0
-INICIALIZAR_ARBOLES  14E6
-INTERVALO_CARRETERA  1CAE
-IZQUIERDA           13FC
-LIMPIAR_PANTALLA    1B78
-LINEA1_DIBUJAR_DER  1204
-LINEA1_DIBUJAR_IZQ  1286
-LINEA1_FIGURA3      11FE
-LINEA1_FIGURA4      1280
-LINEA2_DIBUJAR_DER  1244
-LINEA2_DIBUJAR_IZQ  12C6
-LINEA2_FIGURA3      123E
-LINEA2_FIGURA4      12C0
-LINEAS_BLANCAS      12E2
-LINEAS_BLANCAS_BUCLE  1306
-MAX_MAS_OFF         1C8E
-MODO_GRAFICO        1B8A
-MOSTRAR_ARBOLES     154E
-MOSTRAR_PANTALLA    1B84
-MOVER_COCHE         13CE
-MOVIMIENTO_ARBOLES  1CAC
-MOVIMIENTO_CARRETERA  1CAA
-MOVIMIENTO_LINEA    1CA8
-NUEVO_ARBOL         15C2
-PONER_COLOR         1BA6
-POSICION_INICIAL_LINEAS_BLANCAS  1C7A
-POSICION_LINEA1     1C72
-POSICION_LINEA2     1C74
-POSICION_PREVIA_LINEA1  1C76
-POSICION_PREVIA_LINEA2  1C78
-POS_CARRETERA_DER   14B0
-POS_CARRETERA_IZQ   147A
-POS_CARRETERA_NOR   1444
-POS_INICIAL_ARBOLES  1608
-POS_X               1C92
-POS_X_ENEMIGO       1C9A
-POS_X_SIMBOLO_GAS   1C96
-POS_Y               1C94
-POS_Y_ARBOLES       161C
-POS_Y_ENEMIGO       1C9C
-POS_Y_SIMBOLO_GAS   1C98
-RECARGAR_GASOLINA   16A0
-RECARGAR_GASOLINA_FINAL  16C8
-RECTANGULO          1C3E
-REGENERAR_ARBOL     1592
-REINICIAR           1084
-RESET_COSAS_VARIAS  1090
-RESET_GASOLINA      1632
-RESET_SEGUNDOS      1628
-RETURN              1626
-RUEDA_ENEMIGO       1B42
-RVAL                1BFC
-SEGUNDA_CARRETERA   1128
-SEGUNDA_COMPROBACION  1520
-SEGUNDOS            1C82
-SEG_CEN             1A5A
-SEG_INF             1A78
-SEG_SUP             1A42
-SEG_V_ID            1AEA
-SEG_V_II            1ACC
-SEG_V_SD            1AAE
-SEG_V_SI            1A96
-SIGUIENTE_ARBOL     1584
+ARBOLES_POR_DIBUJAR  1F0C
+ARRAY               1518
+AVAL                1E50
+AVANZAR_CARRETERA   1370
+BORDE_GASOLINA      1D7E
+BUCLE_INICIALIZAR_ARBOLES  14E8
+BUCLE_JUEGO         101C
+BUCLE_MOSTRAR_ARBOLES  1534
+BVAL                1E54
+CAIDA               131E
+CALL_D0             1B6C
+CALL_D1             1B74
+CALL_D2             1B7C
+CALL_D3             1B84
+CALL_D4             1B8C
+CALL_D5             1B94
+CALL_D6             1B9C
+CALL_D7             1BA4
+CALL_D8             1BAC
+CALL_D9             1BB4
+CAMBIO_CARRETERA    13FC
+CANTIDAD_RECARGA_GAS  1ECA
+CARRETERA_INCLINADA1  15BA
+CARRETERA_INCLINADA2  15C4
+CARRETERA_INCLINADA3  15CE
+CARRETERA_INCLINADA4  15D8
+CARRETERA_INVERTIDA  15EC
+CARRETERA_NORM      15E2
+CENT_COUNT          1ED0
+CENT_GAS_COUNT      1ED2
+CHECK_TECLA         1EAE
+COLOR_BORDE         1DE4
+COLOR_RELLENO       1DEE
+COMPROBAR_COLISION_ENEMIGO  195E
+COMPROBAR_COLISION_GASOLINA  17C4
+CONTADOR_CICLOS     1EBA
+DECENAS             1EE6
+DERECHA             13EC
+DIBUJAR_0           1BBC
+DIBUJAR_1           1BD6
+DIBUJAR_2           1BE0
+DIBUJAR_3           1BF6
+DIBUJAR_4           1C0C
+DIBUJAR_5           1C1E
+DIBUJAR_6           1C34
+DIBUJAR_7           1C4E
+DIBUJAR_8           1C5C
+DIBUJAR_9           1C7A
+DIBUJAR_ARBOL       1A62
+DIBUJAR_CARRETERA   10EC
+DIBUJAR_ENEMIGO     19C4
+DIBUJAR_FIGURA      1E58
+DIBUJAR_GASOLINA    16D8
+DIBUJAR_JUGADOR     1848
+DIBUJAR_NUMERO      1B04
+DIBUJAR_SIMBOLO_GAS  16B8
+DIBUJAR_TIEMPO      1ABC
+FIGURA_GASOLINA     1D64
+FIG_LP              1E78
+FIN_DIB_NUM         1BB8
+FIN_JUEGO           1080
+GAME_OVER           1ECE
+GASOLINA            1EC6
+GAS_MAX             1EC8
+GESTIONAR_DIBUJO_GASOLINA  1760
+GESTIONAR_ENEMIGO   18FA
+GESTION_ENEMIGO     1938
+GESTION_GAS         179E
+INCREMENTO_VELOCIDAD  13BE
+INDICADOR_CARRETERA  1F0A
+INICIALIZAR_ARBOLES  14DE
+INTERVALO_CARRETERA  1F08
+IZQUIERDA           13F4
+LIMPIAR_PANTALLA    1DCA
+LINEA1_DIBUJAR_DER  1220
+LINEA1_DIBUJAR_IZQ  12A2
+LINEA1_FIGURA3      121A
+LINEA1_FIGURA4      129C
+LINEA2_DIBUJAR_DER  1260
+LINEA2_DIBUJAR_IZQ  12E2
+LINEA2_FIGURA3      125A
+LINEA2_FIGURA4      12DC
+LINEAS_BLANCAS      12FE
+LINEAS_BLANCAS_BUCLE  1328
+MAX_MAS_OFF         1EE8
+MODO_GRAFICO        1DDC
+MOSTRAR_ARBOLES     1524
+MOSTRAR_PANTALLA    1DD6
+MOVER_COCHE         13C6
+MOVIMIENTO_ARBOLES  1F06
+MOVIMIENTO_CARRETERA  1F04
+MOVIMIENTO_LINEA    1F02
+NO_COLISION         1828
+NO_COLISION_ENEMIGO  19BE
+NUEVO_ARBOL         15B0
+OTRA_POSICION_ENEMIGO  192C
+OTRA_POSICION_GAS   1792
+PONER_COLOR         1DF8
+POSICION_INICIAL_LINEAS_BLANCAS  1EC4
+POSICION_LINEA1     1EBC
+POSICION_LINEA2     1EBE
+POSICION_PREVIA_LINEA1  1EC0
+POSICION_PREVIA_LINEA2  1EC2
+POS_CARRETERA_DER   14A8
+POS_CARRETERA_IZQ   1472
+POS_CARRETERA_NOR   143C
+POS_INICIAL_ARBOLES  15F6
+POS_X               1EEC
+POS_X_ENEMIGO       1EF4
+POS_X_SIMBOLO_GAS   1EF0
+POS_Y               1EEE
+POS_Y_ARBOLES       160A
+POS_Y_ENEMIGO       1EF6
+POS_Y_SIMBOLO_GAS   1EF2
+RECARGAR_GASOLINA   168E
+RECARGAR_GASOLINA_FINAL  16B6
+RECTANGULO          1E90
+REGENERAR_ARBOL     1568
+REINICIAR           1098
+RESET_COSAS_VARIAS  10A4
+RESET_ENEMIGO       18F0
+RESET_GASOLINA      1620
+RESET_JUGADOR       18E6
+RESET_SEGUNDOS      1616
+RETURN              1614
+RUEDA_ENEMIGO       1D94
+RVAL                1E4E
+SEGUNDA_CARRETERA   1144
+SEGUNDA_COMPROBACION  159A
+SEGUNDOS            1ECC
+SEG_CEN             1CAC
+SEG_INF             1CCA
+SEG_SUP             1C94
+SEG_V_ID            1D3C
+SEG_V_II            1D1E
+SEG_V_SD            1D00
+SEG_V_SI            1CE8
+SIGUIENTE_ARBOL     155A
 START               1000
-SUMA                157C
-TIMER               1B70
-TRANSICION          119A
-TRANSICION_DER      11CA
-TRANSICION_IZQ      124C
-TRANSICION_NOR      12CE
-TRIANGULO_GRANDE    1B58
-UNIDADES            1C8A
-UPDATE_GAS          1682
-UPDATE_GAS_FINAL    169E
-UPDATE_GAS_TIEMPO   1660
-UPDATE_GAS_TIEMPO_FINAL  1680
-UPDATE_SEGUNDOS     163C
-UPDATE_SEGUNDOS_FINAL  165E
-VELOCIDAD           1CA6
-WAIT_CENT           1B6A
-X_CUADRADO          1C6C
-Y_CUADRADO          1C6E
+SUMA                1552
+TIMER               1DC2
+TRANSICION          11B6
+TRANSICION_DER      11E6
+TRANSICION_IZQ      1268
+TRANSICION_NOR      12EA
+TRIANGULO_GRANDE    1DAA
+UNIDADES            1EE4
+UPDATE_GAS          1670
+UPDATE_GAS_FINAL    168C
+UPDATE_GAS_TIEMPO   164E
+UPDATE_GAS_TIEMPO_FINAL  166E
+UPDATE_SEGUNDOS     162A
+UPDATE_SEGUNDOS_FINAL  164C
+VELOCIDAD           1F00
+WAIT_CENT           1DBC
+X_GASOLINA          1ED4
+X_JUGADOR           1EE0
+Y_GASOLINA          1ED6
+Y_JUGADOR           1EE2
