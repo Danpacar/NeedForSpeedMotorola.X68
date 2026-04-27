@@ -681,6 +681,63 @@ DIBUJAR_GASOLINA:
     
     RTS
 
+DIBUJAR_JUGADOR:
+    MOVE.L #$00FFFFFF, -(A7)
+    BSR PONER_COLOR
+    ADD.L #4, A7
+    
+    LEA RUEDA_ENEMIGO,A0
+    MOVE.W  ANCHO_JUGADOR,D0
+    ADD.W   #6,D0
+    
+    MOVE.W  D0,6(A0)
+    MOVE.W  D0,10(A0)
+    
+    MOVE.W  X_JUGADOR,D0
+    SUB.W   #3,D0
+    MOVE.W   D0,-(A7)    
+    
+    MOVE.W  Y_JUGADOR,D0  ;RUEDA DE ARRIBA
+    ADD.W   #5,D0
+    MOVE.W   D0,-(A7)
+    
+    MOVE.L  #RUEDA_ENEMIGO,-(A7)
+    BSR DIBUJAR_FIGURA
+    ADD.L   #8,A7
+      
+    MOVE.W  X_JUGADOR,D0
+    SUB.W   #3,D0
+    MOVE.W   D0,-(A7)
+    
+    MOVE.W  Y_JUGADOR,D0    ;RUEDA DE ABAJO
+    ADD.W   ALTO_JUGADOR,D0
+    SUB.W   #10,D0
+    MOVE.W   D0,-(A7)
+    
+    MOVE.L  #RUEDA_ENEMIGO,-(A7)
+    BSR DIBUJAR_FIGURA
+    ADD.L   #8,A7
+
+    MOVE.L #$00FF0000, -(A7)
+    BSR PONER_COLOR
+    ADD.L #4, A7
+    
+    MOVE.W   X_JUGADOR,D0
+    MOVE.W   D0,-(A7)
+    
+    MOVE.W   Y_JUGADOR,D0
+    MOVE.W   D0,-(A7)
+    
+    MOVE.W   ANCHO_JUGADOR,D0
+    MOVE.W   D0,-(A7)
+    
+    MOVE.W   ALTO_JUGADOR,D0
+    MOVE.W   D0,-(A7)
+    
+    BSR RECTANGULO
+    ADD.L   #8,A7
+    
+    RTS
 
 DIBUJAR_ENEMIGO:
     MOVE.L #$00FFFFFF, -(A7)
@@ -1099,6 +1156,7 @@ INTERVALO_CARRETERA DC.W 0
 INDICADOR_CARRETERA DC.W 0
 
     END    START        ; last line of source
+
 
 
 
