@@ -16,6 +16,7 @@ START:                  ; first instruction of program
 BUCLE_JUEGO:
        CMP.W #1,GAME_OVER
        BEQ FIN_JUEGO
+       BSR WAIT_CENT
        
        BSR LIMPIAR_PANTALLA
        BSR DIBUJAR_CARRETERA
@@ -24,16 +25,16 @@ BUCLE_JUEGO:
        BSR LINEAS_BLANCAS
        BSR APARICION_ELEMENTOS
        BSR MOSTRAR_ARBOLES
-       BSR DIBUJAR_COCHE
+       BSR DIBUJAR_JUGADOR
        BSR MOVER_COCHE
        BSR CAMBIO_CARRETERA
        
-       BSR WAIT_CENT
        BSR UPDATE_SEGUNDOS
        BSR UPDATE_GAS_TIEMPO
     
        BSR DIBUJAR_TIEMPO
        BSR DIBUJAR_GASOLINA
+       BSR GESTIONAR_DIBUJO_GASOLINA
     
        MOVE.W  #5,-(A7)
        MOVE.W  #30,-(A7)
@@ -322,22 +323,7 @@ INCREMENTO_VELOCIDAD:
           
           ADD.W #1,VELOCIDAD
           
-          RTS
-
-DIBUJAR_COCHE:
-
-         MOVE.L #$00FF0000, -(A7)
-         BSR PONER_COLOR
-         ADD.L #4, A7
-         
-         MOVE.W X_CUADRADO,-(A7)
-         MOVE.W Y_CUADRADO,-(A7)
-         MOVE.W ANCHO_CUADRADO,-(A7)
-         MOVE.W ALTO_CUADRADO,-(A7)
-         BSR RECTANGULO
-         ADDQ.L #8,A7
-         
-       
+          RTS     
          
 MOVER_COCHE:  
 
@@ -358,14 +344,14 @@ MOVER_COCHE:
  
 DERECHA:
 
-    ADD.W #2,X_CUADRADO
+    ADD.W #2,X_JUGADOR
         RTS
     
     
       
 IZQUIERDA:
     
-    SUB.W #2,X_CUADRADO
+    SUB.W #2,X_JUGADOR
     
     RTS    
     
@@ -680,7 +666,116 @@ DIBUJAR_GASOLINA:
     ADD.L   #8,A7
     
     RTS
+    
+GESTIONAR_DIBUJO_GASOLINA:
+    MOVE.W  VELOCIDAD,D0
+    ADD.W   D0,Y_GASOLINA
+    
+    MOVE.W  Y_GASOLINA,D0
+    CMP.W   #ALTURA_PANTALLA,D0
+    BLT COMPROBAR_COLISION_GASOLINA
+    
+    MOVE.W  #-40,Y_GASOLINA
+    BRA NO_COLISION
 
+COMPROBAR_COLISION_GASOLINA:
+    ; 1. ¿Jugador a la derecha de la Gasolina? (X_JUG > X_GAS + ANCHO_GAS)
+    MOVE.W  X_GASOLINA,D0
+    ADD.W   ANCHO_GASOLINA,D0
+    CMP.W   X_JUGADOR,D0
+    BLT     NO_COLISION ; Si X_JUG es mayor, están separados
+
+    ; 2. ¿Jugador a la izquierda de la Gasolina? (X_JUG + ANCHO_JUG < X_GAS)
+    MOVE.W  X_JUGADOR,D0
+    ADD.W   ANCHO_JUGADOR,D0
+    CMP.W   X_GASOLINA,D0
+    BLT     NO_COLISION ; Si X_GAS es mayor, están separados
+
+    ; 3. ¿Jugador abajo de la Gasolina? (Y_JUG > Y_GAS + ALTO_GAS)
+    MOVE.W  Y_GASOLINA,D0
+    ADD.W   ALTO_GASOLINA,D0
+    CMP.W   Y_JUGADOR,D0
+    BLT     NO_COLISION
+
+    ; 4. ¿Jugador arriba de la Gasolina? (Y_JUG + ALTO_JUG < Y_GAS)
+    MOVE.W  Y_JUGADOR,D0
+    ADD.W   ALTO_JUGADOR,D0
+    CMP.W   Y_GASOLINA,D0
+    BLT     NO_COLISION
+
+    ; SI LLEGAMOS AQUÍ, ES QUE NINGUNA SEPARACIÓN SE CUMPLIO
+    BSR     RECARGAR_GASOLINA
+    MOVE.W  #-200,Y_GASOLINA
+    
+NO_COLISION:
+    MOVE.L #$0000FFFF, -(A7)
+    BSR PONER_COLOR
+    ADD.L #4, A7
+
+    MOVE.W  X_GASOLINA, -(A7)
+    MOVE.W  Y_GASOLINA, -(A7)
+    BSR     DIBUJAR_SIMBOLO_GAS
+    ADD.L   #4, A7
+
+    RTS
+
+DIBUJAR_JUGADOR:
+    MOVE.L #$00FFFFFF, -(A7)
+    BSR PONER_COLOR
+    ADD.L #4, A7
+    
+    LEA RUEDA_ENEMIGO,A0
+    MOVE.W  ANCHO_JUGADOR,D0
+    ADD.W   #6,D0
+    
+    MOVE.W  D0,6(A0)
+    MOVE.W  D0,10(A0)
+    
+    MOVE.W  X_JUGADOR,D0
+    SUB.W   #3,D0
+    MOVE.W   D0,-(A7)    
+    
+    MOVE.W  Y_JUGADOR,D0  ;RUEDA DE ARRIBA
+    ADD.W   #5,D0
+    MOVE.W   D0,-(A7)
+    
+    MOVE.L  #RUEDA_ENEMIGO,-(A7)
+    BSR DIBUJAR_FIGURA
+    ADD.L   #8,A7
+      
+    MOVE.W  X_JUGADOR,D0
+    SUB.W   #3,D0
+    MOVE.W   D0,-(A7)
+    
+    MOVE.W  Y_JUGADOR,D0    ;RUEDA DE ABAJO
+    ADD.W   ALTO_JUGADOR,D0
+    SUB.W   #10,D0
+    MOVE.W   D0,-(A7)
+    
+    MOVE.L  #RUEDA_ENEMIGO,-(A7)
+    BSR DIBUJAR_FIGURA
+    ADD.L   #8,A7
+
+    MOVE.L #$00FF0000, -(A7)
+    BSR PONER_COLOR
+    ADD.L #4, A7
+    
+    MOVE.W   X_JUGADOR,D0
+    MOVE.W   D0,-(A7)
+    
+    MOVE.W   Y_JUGADOR,D0
+    MOVE.W   D0,-(A7)
+    
+    MOVE.W   ANCHO_JUGADOR,D0
+    MOVE.W   D0,-(A7)
+    
+    MOVE.W   ALTO_JUGADOR,D0
+    MOVE.W   D0,-(A7)
+    
+    BSR RECTANGULO
+    ADD.L   #8,A7
+    
+    RTS
 
 DIBUJAR_ENEMIGO:
     MOVE.L #$00FFFFFF, -(A7)
@@ -1051,10 +1146,10 @@ TRIANGULO_GRANDE:
     INCLUDE GROUTINES_FINAL.X68
     
 * Put variables and constants here
-ANCHO_CUADRADO: DC.W 40
-ALTO_CUADRADO: DC.W 80
-X_CUADRADO: DC.W 240
-Y_CUADRADO: DC.W 240
+ANCHO_JUGADOR: DC.W 30
+ALTO_JUGADOR: DC.W 40
+X_JUGADOR: DC.W 240
+Y_JUGADOR: DC.W 340
 CONTADOR_CICLOS: DC.W 0
 POSICION_LINEA1: DC.W 200
 POSICION_LINEA2: DC.W 400
@@ -1065,11 +1160,16 @@ POSICION_INICIAL_LINEAS_BLANCAS DC.W 0
 
 GASOLINA    DC.W 100
 GAS_MAX     DC.W 100
-CANTIDAD_RECARGA_GAS DC.W 20
+CANTIDAD_RECARGA_GAS DC.W 50
 SEGUNDOS    DC.W 0
 GAME_OVER   DC.B 0
 CENT_COUNT  DC.W 0
 CENT_GAS_COUNT  DC.W 0
+
+X_GASOLINA  DC.W    250
+Y_GASOLINA  DC.W    0
+ANCHO_GASOLINA  DC.W    15
+ALTO_GASOLINA   DC.W    15
 
 UNIDADES    DC.W    0
 DECENAS     DC.W    0
@@ -1099,6 +1199,7 @@ INTERVALO_CARRETERA DC.W 0
 INDICADOR_CARRETERA DC.W 0
 
     END    START        ; last line of source
+
 
 
 
